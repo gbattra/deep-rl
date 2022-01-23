@@ -6,7 +6,7 @@
 
 import enum
 from operator import is_
-from random import random
+from random import Random, random
 from typing import Tuple
 import numpy as np
 
@@ -42,8 +42,9 @@ class Transition:
 
 
 class Simulation:
-    def __init__(self, mapp: np.ndarray) -> None:
+    def __init__(self, mapp: np.ndarray, rand: Random = Random()) -> None:
         self.map: np.ndarray = mapp
+        self.rand = rand
 
     def _valid_state(self, state: State) -> bool:
         """
@@ -52,14 +53,11 @@ class Simulation:
         x_bound, y_bound = self.map.shape
         x, y = state
         if x < 0 or x >= x_bound:
-            print("Invalid next state: OOB")
             return False
         if y < 0 or y >= y_bound:
-            print("Invalid next state: OOB")
             return False
         
         if MapCell(self.map[y, x]) == MapCell.WALL:
-            print("Invalid next state: Wall")
             return False
         
         return True
@@ -103,16 +101,13 @@ class Simulation:
         if slip == Slip.NEGATIVE:
             new_action_idx -= 1
             if new_action_idx < 0:
-                new_action_idx = len(Action)
+                new_action_idx = len(Action) - 1
         if slip == Slip.POSITIVE:
             new_action_idx += 1
             if new_action_idx >= len(Action):
                 new_action_idx = 0
 
         action_taken = Action(new_action_idx)
-        if new_action_idx != action.value:
-            print(f'Domain noise! Action taken: {str(action_taken)} ')
-            
         return action_taken
 
     def _generate_slip(self) -> Slip:
@@ -122,7 +117,7 @@ class Simulation:
         """
         # action pdf: .8  .1  .1
         action_cdf = [.8, .9, 1.]
-        x = random()
+        x = self.rand.random()
         a = 0
         while x > action_cdf[a]:
             a += 1

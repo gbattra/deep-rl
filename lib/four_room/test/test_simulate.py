@@ -5,6 +5,7 @@ import numpy as np
 from lib.four_room.simulate import MapCell, Simulation
 from lib.four_room.map import map_instantiate
 
+
 def test_domain_slip():
     """
     Test that the domain slip functionality produces

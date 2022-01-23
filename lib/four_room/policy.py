@@ -4,6 +4,8 @@
 # A policy which maps from S -> A, typically learned through
 # experience
 
+from math import floor
+from random import Random
 from typing import Dict
 from lib.four_room.simulate import Action, State
 
@@ -16,7 +18,7 @@ class Policy:
         pass
 
 
-class ManualPolicy():
+class ManualPolicy(Policy):
     prompt: str = '                            \
         Choose an action for state {state}  \n \
             - w: UP                         \n \
@@ -39,12 +41,22 @@ class ManualPolicy():
         x, y = state
         action_key = input(self.prompt.format(state=f'[x: {x}, y: {y}]'))
         action_idx = self.action_key_idx_map[action_key]
-        print(action_idx)
 
         assert action_idx < len(Action) and action_idx >= 0, \
             f'Invalid action value. Must be between 0 and {len(Action)}\n'
             
         action = Action(action_idx)
-        print(action)
-        
         return action
+
+
+class RandomPolicy(Policy):
+    def __init__(self, seed: int = 0) -> None:
+        super().__init__()
+        self.rand: Random = Random(seed)
+
+    def map(self, state: State) -> Action:
+        """
+        Generate a random action
+        """
+        action_idx = floor(self.rand.random() * len(Action))
+        return Action(action_idx)

@@ -32,5 +32,6 @@ def main():
             print('Resetting agent from goal to [x: 0, y: 0]')
         print('-------------------------------')
 
+
 if __name__ == '__main__':
     main()
