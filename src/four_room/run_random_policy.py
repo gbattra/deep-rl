@@ -40,6 +40,8 @@ def main():
     mean = np.mean(cu_trial_rewards, 0)
     plt.plot(mean, 'k')
 
+    plt.xlabel = 'Steps'
+    plt.ylabel = 'Cummulative Reward'
     plt.show()
     
     

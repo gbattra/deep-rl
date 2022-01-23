@@ -60,3 +60,23 @@ class RandomPolicy(Policy):
         """
         action_idx = floor(self.rand.random() * len(Action))
         return Action(action_idx)
+
+
+# Same Action for N Steps Policy
+class SANSPolicy(RandomPolicy):
+    def __init__(self, n_steps: int) -> None:
+        super().__init__()
+        self.n_steps: int = n_steps
+        self.countdown: int = 0
+        self.curr_action: Action = None
+
+    def map(self, _: State) -> Action:
+        """
+        Returns the same action regardless of state
+        """
+        if self.countdown == 0 or self.curr_action is None:
+            self.curr_action = super().map((0, 0))  # get random action
+            self.countdown = self.n_steps
+
+        self.countdown -= 1
+        return self.curr_action
