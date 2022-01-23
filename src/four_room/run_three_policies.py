@@ -37,8 +37,8 @@ def plot_rewards(agent_rewards: List[np.ndarray], n_trials: int) -> None:
         mean = np.mean(rewards, 0)
         plt.plot(mean, label=label)
 
-    plt.xlabel = 'Steps'
-    plt.ylabel = 'Cummulative Reward'
+    plt.xlabel('Steps')
+    plt.ylabel('Cummulative Reward')
     plt.legend()
     plt.show()
 
