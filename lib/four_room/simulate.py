@@ -5,16 +5,17 @@
 
 
 import enum
+from operator import is_
 from random import random
 from typing import Tuple
 import numpy as np
 
 
 class Action(enum.Enum):
-    UP = 0
-    DOWN = 1
-    LEFT = 2
-    RIGHT = 3
+    LEFT = 0
+    UP = 1
+    RIGHT = 2
+    DOWN = 3
 
 
 class Slip(enum.Enum):
@@ -51,11 +52,17 @@ class Simulation:
         x_bound, y_bound = self.map.shape
         x, y = state
         if x < 0 or x >= x_bound:
+            print("Invalid next state: OOB")
             return False
         if y < 0 or y >= y_bound:
+            print("Invalid next state: OOB")
             return False
         
-        return MapCell(self.map[x, y]) != MapCell.WALL
+        if MapCell(self.map[y, x]) == MapCell.WALL:
+            print("Invalid next state: Wall")
+            return False
+        
+        return True
 
     def _get(self, state: State) -> MapCell:
         """
@@ -71,7 +78,7 @@ class Simulation:
         x, y = state
 
         if self._get((x, y)) == MapCell.GOAL:
-            return (x, y)
+            return (0, 0)
 
         if action == Action.UP:
             return (x, y + 1)
