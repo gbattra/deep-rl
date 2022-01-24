@@ -51,22 +51,22 @@ def main() -> None:
     random_policy = RandomPolicy()
     random_agent = Agent(init_state, random_policy, sim)
 
-    sans_policy = SANSPolicy(1000)
-    sans_1000_agent = Agent(init_state, sans_policy, sim)
+    sans_policy = SANSPolicy(500)
+    sans_500_agent = Agent(init_state, sans_policy, sim)
 
-    sans_policy = SANSPolicy(5)
+    sans_policy = SANSPolicy(10)
     sans_10_agent = Agent(init_state, sans_policy, sim)
 
     n_trials = 10
     n_steps = 10**4
 
     random_policy_rewards = np.zeros((n_trials, n_steps))
-    sans_1000_policy_rewards  = np.zeros((n_trials, n_steps))
+    sans_500_policy_rewards  = np.zeros((n_trials, n_steps))
     sans_10_policy_rewards  = np.zeros((n_trials, n_steps))
 
     agents_rewards = [
         (random_agent, random_policy_rewards, 'Random Policy'),
-        (sans_1000_agent, sans_1000_policy_rewards, 'SANS-1000 Policy'),
+        (sans_500_agent, sans_500_policy_rewards, 'SANS-500 Policy'),
         (sans_10_agent, sans_10_policy_rewards, 'SANS-10 Policy')
     ]
     for t in range(n_trials):

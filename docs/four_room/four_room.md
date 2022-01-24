@@ -101,3 +101,28 @@ Represents a policy used by an `Agent` to select an `Action` at a given `State`.
 **RandomPolicy**: `Policy` which randomly chooses an action at each step
 
 **SANSPolicy**: Stands for `Same Action for N-Steps`. Randomly selects an action then executes that action for `n` steps, where `n` is a constructor arg
+
+## Evaluation
+
+### Random Policy
+![Random Policy](assets/random_policy.png)
+
+**How well do you think this compares to the manual policy?**
+
+The manual policy performs with human level intelligence and requires no prior training. It does not required tens of thousands of steps to achieve a modest cummulative reward. Assuming the human operator is capable enough, the agent should find roughly the shortest path to the goal on each iteration, making it highly efficient.
+
+The random policy, conversely, does not rely on any prior knowledge or model of the environment when making a decision. It makes no use of what prior rewards have been gained when taking an action from a given state. Any reward it gains is by chance and does not influence the future decisions of the policy.
+
+### Two Other Policies
+
+![Three Policies](assets/three_policies.png)
+
+For this assignment I actually implemented one policy but with a hyperparameter which dramatically impacts its average performance.
+
+The policy is called a `Same Action for N-Steps Policy (SANS Policy)`. It is a modification of the `Random Policy` in that it randomly chooses a new action and then executes that same action for `N` steps until choosing another at random.
+
+The hyperparameter in this case is `N`, the number of steps to take that same action before randomly selecting a new one.
+
+We see that when `N` is big, it underperforms the `Random Policy` on average. When `N` is small but still greater than one (which would make it effectively a `Random Policy`), we see it outperforms the `Random Policy` by almost 200% on average.
+
+Intuitively, when we think about the environment within which the agent is operating, there is a lot of open space that needs to be traversed to reach the goal. Because the walls prevent the agent from taking a straight line to the goal, the agent is forced to move in a straight line for several steps at a time. If the policy is lucky and chooses the right direction, it will cover more ground and approach the goal more efficiently than a `Random Policy`, which we potentially change directions at each step. When `N` is large however, choosing the wrong direction to move means we will waste `N` steps before we have the chance to choose a new action and hopefully get back on track. The `Random Policy` likely correct itself sooner since it chooses a new action at each step.
