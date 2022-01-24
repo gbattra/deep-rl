@@ -117,7 +117,7 @@ The random policy, conversely, does not rely on any prior knowledge or model of 
 
 ![Three Policies](assets/three_policies.png)
 
-For this assignment I actually implemented one policy but with a hyperparameter which dramatically impacts its average performance.
+For this assignment I actually implemented one additional policy but with a hyperparameter which dramatically impacts its average performance.
 
 The policy is called a `Same Action for N-Steps Policy (SANS Policy)`. It is a modification of the `Random Policy` in that it randomly chooses a new action and then executes that same action for `N` steps until choosing another at random.
 
