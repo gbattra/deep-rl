@@ -123,7 +123,7 @@ The policy is called a `Same Action for N-Steps Policy (SANS Policy)`. It is a m
 
 The hyperparameter in this case is `N`, the number of steps to take that same action before randomly selecting a new one.
 
-We see that when `N` is big, it underperforms the `Random Policy` on average. When `N` is small but still greater than one (which would make it effectively a `Random Policy`), we see it outperforms the `Random Policy` by almost 200% on average.
+We see that when `N` is big, it underperforms the `Random Policy` on average. When `N` is small but still greater than one, we see it outperforms the `Random Policy` by almost 200% on average.
 
 Intuitively, when we think about the environment within which the agent is operating, there is a lot of open space that needs to be traversed to reach the goal. Because the walls prevent the agent from taking the hypotenuse to the goal, the agent is forced to move in a straight line for several steps at a time to successfully move through the doors.
 
