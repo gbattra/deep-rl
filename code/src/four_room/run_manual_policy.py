@@ -20,16 +20,19 @@ def main():
     policy = ManualPolicy()
     agent = Agent(init_state, policy, sim)
 
+    goal_reached = False
     while True:
         visualize_scenario(agent, sim)
         transition = agent.step()
         agent.update(transition)
         x, y = agent.state
+        
         if MapCell(mapp[y, x]) == MapCell.GOAL:
             print('Goal reached! +1 Reward!')
             goal_reached = True
         elif goal_reached:
             print('Resetting agent from goal to [x: 0, y: 0]')
+            goal_reached = False
         print('-------------------------------')
 
 

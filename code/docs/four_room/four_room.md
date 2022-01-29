@@ -32,10 +32,10 @@ To set up the code and environment, do the following:
 
         - *Note*: The visualization for this is a numpy array print. The values of each cell have the following meanings:
             
-            0 - an empty cell \
-            1 - the goal cell (upper right) \
-            2 - a wall cell \
-            8 - the agent itself
+             `0` - an empty cell \
+             `1` - the goal cell (upper right) \
+             `2` - a wall cell \
+            `77` - the agent itself
 
     * *Random Policy (pt. 3*: `python ./src/four_rooms/run_random_policy.py`
     * *Three Policies (pt. 4*): `python ./src/four_rooms/run_three_policies.py`

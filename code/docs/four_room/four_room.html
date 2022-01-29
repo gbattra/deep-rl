@@ -1,0 +1,96 @@
+<h1 id="p1---four-rooms">P1 - Four Rooms</h1>
+<p>Gregory Attra<br />
+CS 7180 | S.T. in A.I. — Advanced Reinforcement Learning<br />
+Professor Chris Amato<br />
+01/23/2022</p>
+<h2 id="setup-execution">Setup &amp; Execution</h2>
+<p><strong>Prerequisites</strong>:</p>
+<ul>
+<li>A Linux machine with Python 3 installed</li>
+</ul>
+<p><strong>Setup</strong>:</p>
+<p><em>Note</em>: All commands are run in a bash shell.</p>
+<p>To set up the code and environment, do the following:</p>
+<ol type="1">
+<li>Unzip the program files into a directory (i.e. <code>/code</code>)</li>
+<li><code>cd</code> into the directory</li>
+<li>Run <code>source ./init</code></li>
+</ol>
+<ul>
+<li>This will setup and activate a virtual environment, install the required packages, and grant exec permissions on the <code>src</code> scripts</li>
+</ul>
+<p><strong>Execution</strong>:</p>
+<ol type="1">
+<li><p><code>cd</code> into the root directory of the project</p></li>
+<li><p>Activate the venv: <code>source ./init</code></p></li>
+<li><p>Run the relevant script via <code>python ./src/&lt;proj_dir&gt;/&lt;script.py&gt;</code></p>
+<ul>
+<li><p><em>Manual Policy (pt. 2)</em>: <code>python ./src/four_rooms/run_manual_policy.py</code></p>
+<ul>
+<li><p><em>Note</em>: The visualization for this is a numpy array print. The values of each cell have the following meanings:</p>
+<p><code>0</code> - an empty cell<br />
+<code>1</code> - the goal cell (upper right)<br />
+<code>2</code> - a wall cell<br />
+<code>77</code> - the agent itself</p></li>
+</ul></li>
+<li><p><em>Random Policy (pt. 3</em>: <code>python ./src/four_rooms/run_random_policy.py</code></p></li>
+<li><p><em>Three Policies (pt. 4</em>): <code>python ./src/four_rooms/run_three_policies.py</code></p></li>
+</ul></li>
+</ol>
+<h2 id="code-walkthrough">Code Walkthrough</h2>
+<h3 id="action"><code>Action</code></h3>
+<p>An <code>Enum</code> representing the four directions the agent can choose to move: <code>UP</code>, <code>DOWN</code>, <code>LEFT</code>, <code>RIGHT</code></p>
+<h3 id="state"><code>State</code></h3>
+<p>A <code>Tuple</code> representing the <code>x</code> and <code>y</code> coordinates of the agent at a given step.</p>
+<h3 id="slip"><code>Slip</code></h3>
+<p>An <code>Enum</code> representing the types of domain noise that may influence the action taken by the agent. Called “slip” as in this case the effect is that the agent slips and moves in the wrong direction. Domain slip causes the agent to move perpendicular to the intended direction (both in the negative and positive directions) with a probability of 0.2 split evenly between each perpendicular direction.</p>
+<h3 id="mapcell"><code>MapCell</code></h3>
+<p>An enum representing the types of cells in the map:</p>
+<ul>
+<li><code>EMPTY</code>: An empty cell in the map</li>
+<li><code>WALL</code>: A wall cell in the map</li>
+<li><code>GOAL</code>: The goal cell in the map</li>
+</ul>
+<h3 id="transition"><code>Transition</code></h3>
+<p>Plain object/struct containing the new state and reward for entering that state.</p>
+<h3 id="simulation"><code>Simulation</code></h3>
+<p>Representation of the environment within which the agent acts. Exposes functionality for interacting with that environment to receive an updated state and reward for the agent.</p>
+<ul>
+<li><p><code>def simulate(self, s: State, a: Action) -&gt; Transition</code></p>
+<p>Execute the given action <code>a</code> from state <code>s</code> and return a <code>Transition</code> capturing the resulting state and reward</p></li>
+</ul>
+<h3 id="agent"><code>Agent</code></h3>
+<p>Represents the agent interacting with the environment. Holds a reference to a model of the environment and a policy to choose optimal actions in that environment based on its current state.</p>
+<ul>
+<li><p><code>def step(self) -&gt; Transition</code></p>
+<p>Choose an action given the current <code>State</code> using a policy and run that <code>Action</code> through the <code>Simulation</code> to get the next <code>Transition</code></p></li>
+<li><p><code>def update(self, transition: Transition) -&gt; None:</code></p>
+<p>Update the agent’s current <code>State</code> and add to its cummulate reward given the current step’s <code>Transition</code></p></li>
+</ul>
+<h3 id="policy"><code>Policy</code></h3>
+<p>Represents a policy used by an <code>Agent</code> to select an <code>Action</code> at a given <code>State</code>.</p>
+<ul>
+<li><p><code>def map(self, state: State) -&gt; Action:</code></p>
+<p>Map a given <code>State</code> to the <code>Action</code> that yields the highest expected reward for the agent</p></li>
+</ul>
+<p><strong>ManualPolicy</strong>: <code>Policy</code> for manually controlling the agent via user input</p>
+<p><strong>RandomPolicy</strong>: <code>Policy</code> which randomly chooses an action at each step</p>
+<p><strong>SANSPolicy</strong>: Stands for <code>Same Action for N-Steps</code>. Randomly selects an action then executes that action for <code>n</code> steps, where <code>n</code> is a constructor arg</p>
+<h2 id="evaluation">Evaluation</h2>
+<h3 id="random-policy">Random Policy</h3>
+<figure>
+<img src="assets/random_policy.png" alt="Random Policy" /><figcaption aria-hidden="true">Random Policy</figcaption>
+</figure>
+<p><strong>How well do you think this compares to the manual policy?</strong></p>
+<p>The manual policy performs with human level intelligence and requires no prior training. It does not required tens of thousands of steps to achieve a modest cummulative reward. Assuming the human operator is capable enough, the agent should find roughly the shortest path to the goal on each iteration, making it highly efficient.</p>
+<p>The random policy, conversely, does not rely on any prior knowledge or model of the environment when making a decision. It makes no use of what prior rewards have been gained when taking an action from a given state. Any reward it gains is by chance and does not influence the future decisions of the policy.</p>
+<h3 id="two-other-policies">Two Other Policies</h3>
+<figure>
+<img src="assets/three_policies.png" alt="Three Policies" /><figcaption aria-hidden="true">Three Policies</figcaption>
+</figure>
+<p>For this assignment I actually implemented one additional policy but with a hyperparameter which dramatically impacts its average performance.</p>
+<p>The policy is called a <code>Same Action for N-Steps Policy (SANS Policy)</code>. It is a modification of the <code>Random Policy</code> in that it randomly chooses a new action and then executes that same action for <code>N</code> steps until choosing another at random.</p>
+<p>The hyperparameter in this case is <code>N</code>, the number of steps to take that same action before randomly selecting a new one.</p>
+<p>We see that when <code>N</code> is big, it underperforms the <code>Random Policy</code> on average. When <code>N</code> is small but still greater than one, we see it outperforms the <code>Random Policy</code> by almost 200% on average.</p>
+<p>Intuitively, when we think about the environment within which the agent is operating, there is a lot of open space that needs to be traversed to reach the goal. Because the walls prevent the agent from taking the hypotenuse to the goal, the agent is forced to move in a straight line for several steps at a time to successfully move through the doors.</p>
+<p>When <code>N</code> is reasonably small (i.e. ~5-10), if the policy gets lucky and chooses the right direction, the agent will cover more ground and approach the goal more efficiently than a <code>Random Policy</code>, which potentially changes directions at each step. When <code>N</code> is large however, choosing the wrong direction means the agent will waste <code>N</code> steps before it has the chance to choose a new action and hopefully get back on track. The <code>Random Policy</code> likely correct itself sooner since it chooses a new action at each step.</p>
