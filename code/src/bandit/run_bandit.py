@@ -4,9 +4,8 @@
 # 01/28/2022
 
 import argparse
+from lib.bandit.factory import BanditFactory, DomainFactory
 from lib.bandit.analytics import Analytics
-from lib.bandit.bandit import make_bandit
-from lib.bandit.domain import make_domain
 
 from lib.bandit.testsuite import TestSuite
 
@@ -25,8 +24,13 @@ def main():
     args = parser.parse_args()
 
     analytics = Analytics(args.p, args.s, args.k)
-    testsuite = TestSuite(args.p, args.s, make_bandit, make_domain, analytics)
-    testsuite.run(args.mu, args.std, args.k)
+    testsuite = TestSuite(
+        args.p,
+        args.s,
+        BanditFactory(args.k),
+        DomainFactory(args.mu, args.std, args.k),
+        analytics)
+    testsuite.run()
     analytics.plot()
 
 
