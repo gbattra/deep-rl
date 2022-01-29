@@ -11,4 +11,4 @@ export PYTHONPATH=${PWD}
 pip install --upgrade pip
 pip install -r requirements.txt
 
-chmod +x ./src
+chmod +x ./src/*/*.py
