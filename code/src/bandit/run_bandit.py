@@ -24,7 +24,7 @@ def main():
                         type=float, default=1.)
     args = parser.parse_args()
 
-    analytics = Analytics(args.p, args.k)
+    analytics = Analytics(args.p, args.s, args.k)
     testsuite = TestSuite(args.p, args.s, make_bandit, make_domain, analytics)
     testsuite.run(args.mu, args.std, args.k)
     analytics.plot()
