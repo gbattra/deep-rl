@@ -5,7 +5,7 @@
 
 import argparse
 from lib.bandit.factory import BanditFactory, DomainFactory
-from lib.bandit.analytics import Analytics
+from lib.bandit.analytics import BanditAnalytics
 from lib.bandit.testsuite import TestSuite
 
 
@@ -23,7 +23,7 @@ def main():
                         type=float, default=1.)
     args = parser.parse_args()
 
-    analytics = Analytics(args.p, args.s, args.k)
+    analytics = BanditAnalytics(args.p, args.s, args.k)
     testsuite = TestSuite(
         args.p,
         args.s,

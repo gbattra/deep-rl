@@ -4,9 +4,11 @@
 # 01/28/2022
 
 import argparse
+import matplotlib.pyplot as plt
+
+from lib.bandit.analytics import EpsilonGreedyBanditAnalytics
 from lib.bandit.factory import EpsilonGreedyBanditFactory
-from lib.bandit.factory import BanditFactory, DomainFactory
-from lib.bandit.analytics import Analytics
+from lib.bandit.factory import DomainFactory
 from lib.bandit.testsuite import TestSuite
 
 
@@ -22,19 +24,24 @@ def main():
                         type=float, default=.0)
     parser.add_argument('-std', help='The std of q*',
                         type=float, default=1.)
-    parser.add_argument('-e', help='Epsilon value for the bandit',
-                        type=float, default=.1)
+    parser.add_argument('-eps', help='Epsilon values for each bandit',
+                        nargs='+', type=float, default=[.1])
     args = parser.parse_args()
 
-    analytics = Analytics(args.p, args.s, args.k)
-    testsuite = TestSuite(
-        args.p,
-        args.s,
-        EpsilonGreedyBanditFactory(args.k, args.e),
-        DomainFactory(args.mu, args.std, args.k),
-        analytics)
-    testsuite.run()
-    analytics.plot()
+    analytics = []
+    n_eps = len(args.eps)
+    fig, ax = plt.subplots()
+    for eps in args.eps:
+        analytics = EpsilonGreedyBanditAnalytics(n_eps, args.p, args.s, args.k)
+        testsuite = TestSuite(
+            args.p,
+            args.s,
+            EpsilonGreedyBanditFactory(args.k, eps),
+            DomainFactory(args.mu, args.std, args.k),
+            analytics)
+        testsuite.run()
+        analytics.splot(ax)
+    plt.show()
 
 
 if __name__ == '__main__':
