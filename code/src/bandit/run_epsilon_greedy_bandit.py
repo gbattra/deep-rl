@@ -5,6 +5,7 @@
 
 import argparse
 import matplotlib.pyplot as plt
+import numpy as np
 
 from lib.bandit.analytics import EpsilonGreedyBanditAnalytics
 from lib.bandit.factory import EpsilonGreedyBanditFactory
@@ -31,6 +32,7 @@ def main():
     analytics = []
     fig, ax = plt.subplots(2)
     for eps in args.eps:
+        np.random.seed(0)
         analytics = EpsilonGreedyBanditAnalytics(eps, args.p, args.s, args.k)
         testsuite = TestSuite(
             args.p,
