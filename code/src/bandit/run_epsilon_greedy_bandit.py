@@ -29,10 +29,9 @@ def main():
     args = parser.parse_args()
 
     analytics = []
-    n_eps = len(args.eps)
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(2)
     for eps in args.eps:
-        analytics = EpsilonGreedyBanditAnalytics(n_eps, args.p, args.s, args.k)
+        analytics = EpsilonGreedyBanditAnalytics(eps, args.p, args.s, args.k)
         testsuite = TestSuite(
             args.p,
             args.s,
@@ -41,6 +40,8 @@ def main():
             analytics)
         testsuite.run()
         analytics.splot(ax)
+    ax[0].legend()
+
     plt.show()
 
 
