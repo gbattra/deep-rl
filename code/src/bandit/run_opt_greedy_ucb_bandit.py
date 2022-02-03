@@ -10,7 +10,6 @@ from lib.bandit.factory import OptimisticGreedyBanditFactory
 from lib.bandit.analytics import OptimisticGreedyBanditAnalytics
 from lib.bandit.analytics import UcbBanditAnalytics
 from lib.bandit.factory import UcbBanditFactory
-from lib.bandit.factory import EpsilonGreedyBanditFactory
 from lib.bandit.factory import DomainFactory
 from lib.bandit.testsuite import TestSuite
 
@@ -27,38 +26,67 @@ def main():
                         type=float, default=.0)
     parser.add_argument('-std', help='The std of q*',
                         type=float, default=1.)
-    parser.add_argument('-eps', help='Epsilon values for each bandit',
-                        nargs='+', type=float, default=[.0, .0, .1, .1])
-    parser.add_argument('-c', help='The c param for the UCB action selectin algo',
-                        type=float, default=2.)
-    parser.add_argument('-q', help='The initial q values for optimistic greedy',
-                        nargs='+', type=float, default=[.0, 5., .0, 5.])
+    parser.add_argument('-a', help='The learning rate for the incremental update',
+                        type=float, default=.1)
     args = parser.parse_args()
 
     analytics = []
     fig, ax = plt.subplots(2)
-    for q_init, eps in zip(args.q, args.eps):
+    eps = [.0, .0, .1, .1]
+    q_inits = [.0, 5., .0, 5.]
+    styles = [
+        ((1., .5, .5), 'dashed'),
+        ((1., .0, .0), 'solid'),
+        ((.5, .5, 1.), 'dashed'),
+        ((.0, .0, 1.), 'solid')
+    ]
+    for q_init, eps, style in zip(q_inits, eps, styles):
         np.random.seed(0)
         analytics = OptimisticGreedyBanditAnalytics(q_init, eps, args.p, args.s, args.k)
         testsuite = TestSuite(
             args.p,
             args.s,
-            OptimisticGreedyBanditFactory(q_init, eps, args.k),
+            OptimisticGreedyBanditFactory(q_init, eps, args.a, args.k),
             DomainFactory(args.mu, args.std, args.k),
             analytics)
         testsuite.run()
-        analytics.splot(ax)
+
+        color, linestyle = style
+        analytics.splot(ax, color, linestyle)
+    
+    opt_rwds = np.amax(analytics.q_stars, axis=1)
+    avg_opt_rwd = np.sum(opt_rwds) / float(analytics.n_problems)
+    ax[0].hlines(
+        avg_opt_rwd,
+        xmin=0, xmax=analytics.n_steps,
+        color='k',
+        linestyle='solid',
+        label='Upper Bound')
+
+    stde_avg_rwd = 1.96 * (np.std(opt_rwds) / np.sqrt(analytics.n_problems))
+    y_neg = avg_opt_rwd - stde_avg_rwd
+    y_pos = avg_opt_rwd + stde_avg_rwd
+    ax[0].fill_between(
+        range(analytics.n_steps),
+        y_neg,
+        y_pos,
+        alpha=0.2,
+        color=(0.25, 0.25, 0.25))
 
     np.random.seed(0)
-    analytics = UcbBanditAnalytics(args.c, args.p, args.s, args.k)
+    c = 2.
+    analytics = UcbBanditAnalytics(c, args.p, args.s, args.k)
     testsuite = TestSuite(
         args.p,
         args.s,
-        UcbBanditFactory(args.c, args.k),
+        UcbBanditFactory(c, args.k),
         DomainFactory(args.mu, args.std, args.k),
         analytics)
     testsuite.run()
-    analytics.splot(ax)
+    analytics.splot(ax, (.2, .7, .4), 'solid')
+
+    ax[0].legend()
+    ax[1].legend()
 
     plt.show()
 

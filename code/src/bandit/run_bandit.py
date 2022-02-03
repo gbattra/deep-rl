@@ -31,7 +31,7 @@ def main():
         DomainFactory(args.mu, args.std, args.k),
         analytics)
     testsuite.run()
-    analytics.plot()
+    analytics.plot((.0, .0, 1.))
 
 
 if __name__ == '__main__':
