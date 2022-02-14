@@ -17,9 +17,9 @@ from lib.bandit.testsuite import TestSuite
 def main():
     parser = argparse.ArgumentParser('Run an epsilon greedy bandit testsuite')
     parser.add_argument('-p', help='The number of problems to run',
-                        type=int, default=10)
+                        type=int, default=2000)
     parser.add_argument('-s', help='The number of steps to run per problem',
-                        type=int, default=10)
+                        type=int, default=1000)
     parser.add_argument('-k', help='The number of arms on the bandit',
                         type=int, default=10)
     parser.add_argument('-mu', help='The mean of q*',
