@@ -3,7 +3,7 @@
 .hgsvn
 
 # Ignore local virtualenvs
-lib/
+
 bin/
 include/
 .Python/
