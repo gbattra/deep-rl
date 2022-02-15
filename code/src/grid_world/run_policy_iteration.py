@@ -22,22 +22,21 @@ def main():
         readable_policy.append(str(Action(a)).replace('Action.', ''))
     readable_policy = np.array(readable_policy)
 
-    flipped_readable_policy = np.flip(
-        readable_policy.reshape(
+    readable_policy = []
+    for a in argmax_policy:
+        readable_policy.append(str(Action(a)).replace('Action.', ''))
+    readable_policy = np.array(readable_policy).reshape(
             int(np.sqrt(N_STATES)),
-            int(np.sqrt(N_STATES))),
-        axis=0)
-    flipped_argmax_policy = np.flip(
-        argmax_policy.reshape(
-            int(np.sqrt(N_STATES)),
-            int(np.sqrt(N_STATES))),
-        axis=0)
+            int(np.sqrt(N_STATES)))
 
-    plt.matshow(flipped_argmax_policy)
-    for (i, j), z in np.ndenumerate(flipped_readable_policy):
-        plt.text(i, j, flipped_readable_policy[j, i], ha='center', va='center',
+    plt.matshow(argmax_policy.reshape(
+            int(np.sqrt(N_STATES)),
+            int(np.sqrt(N_STATES))))
+    for (i, j), z in np.ndenumerate(readable_policy):
+        plt.text(i, j, readable_policy[j, i], ha='center', va='center',
                 bbox=dict(boxstyle='round', facecolor='white', edgecolor='0.3'))
-                
+    
+    plt.gca().invert_yaxis()
     plt.show()
 
 

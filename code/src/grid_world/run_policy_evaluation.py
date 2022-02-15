@@ -15,19 +15,16 @@ from lib.grid_world.policy_iteration import policy_evaluation
 def main():
     policy = np.ones((N_STATES, len(Action))) / float(len(Action))
     dynamics = gw_dynamics()
-    values = policy_evaluation(policy, dynamics)
-
-    flipped_values = np.flip(
-            np.round(values, 1).reshape(
+    values = policy_evaluation(policy, dynamics).reshape(
                 int(np.sqrt(N_STATES)),
-                int(np.sqrt(N_STATES))),
-            axis=0)
+                int(np.sqrt(N_STATES)))
     
-    plt.matshow(flipped_values)
-    for (i, j), z in np.ndenumerate(flipped_values):
+    plt.matshow(values)
+    for (i, j), z in np.ndenumerate(values):
         plt.text(j, i, '{:0.1f}'.format(z), ha='center', va='center',
                 bbox=dict(boxstyle='round', facecolor='white', edgecolor='0.3'))
 
+    plt.gca().invert_yaxis()
     plt.show()
 
 
