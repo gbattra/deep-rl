@@ -59,3 +59,50 @@ def policy_evaluation(
         i += 1
     
     return V
+
+
+def policy_iteration(dynamics: np.ndarray) -> np.ndarray:
+    '''
+    Estimate the optimal policy using policy iteration
+    '''
+    # instantiate arbitrary policy
+    policy = np.zeros((N_STATES, len(Action)))
+
+    i = 0
+    while True and i < MAX_ITER:
+        # estimate value function for policy
+        V = policy_evaluation(policy, dynamics)
+
+        stable = True
+        for s in range(N_STATES):
+            a_values = []
+            for a in range(len(Action)):
+                # prob of choosing action a at state s
+                s_sum = 0
+                for s_prime in range(N_STATES):
+                    # rwd and prob of entering s_prime from state s taking aciton a
+                    p, r = dynamics[s, a, s_prime]
+                    # value at s_prime
+                    v = V[s_prime]
+                    # add value to running sum
+                    s_sum += p * (r + DISCOUNT_FACTOR * v)
+                a_values.append(s_sum)
+            # store the current policy action for comparison
+            old_a = np.argmax(policy[s])
+            # get action with max value
+            a_max = np.argmax(a_values)
+            # update policy to use max action
+            policy[s, :] = 0
+            policy[s, a_max] = 1
+
+            # if new action is not same as old action, and new action value
+            # is greater than old action value, policy not stable
+            if a_max != old_a and a_values[a_max] > a_values[old_a]:
+                stable = False
+        
+        if stable:
+            break
+        
+        i += 1
+
+    return policy
