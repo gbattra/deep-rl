@@ -22,6 +22,7 @@ def value_iteration(dynamics: np.ndarray) -> np.ndarray:
 
     Output a deterministic policy approximating the optimal policy.
     '''
+    # instantiate value function and policy
     V = np.zeros((N_STATES))
     policy = np.zeros((N_STATES, len(Action)))
 

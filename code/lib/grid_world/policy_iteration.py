@@ -22,6 +22,7 @@ def policy_evaluation(
     Evaluate (estimate the value function) for a given policy
     and dynamics/rewards function
     '''
+    # instantiate value function
     V = np.zeros((N_STATES))
 
     # iter counter to avoid inf loop

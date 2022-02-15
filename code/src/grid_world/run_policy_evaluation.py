@@ -17,12 +17,18 @@ def main():
     dynamics = gw_dynamics()
     values = policy_evaluation(policy, dynamics)
 
-    print('Value Function:')
-    print(np.flip(
+    flipped_values = np.flip(
             np.round(values, 1).reshape(
                 int(np.sqrt(N_STATES)),
                 int(np.sqrt(N_STATES))),
-            axis=0))
+            axis=0)
+    
+    plt.matshow(flipped_values)
+    for (i, j), z in np.ndenumerate(flipped_values):
+        plt.text(j, i, '{:0.1f}'.format(z), ha='center', va='center',
+                bbox=dict(boxstyle='round', facecolor='white', edgecolor='0.3'))
+
+    plt.show()
 
 
 if __name__ == '__main__':
