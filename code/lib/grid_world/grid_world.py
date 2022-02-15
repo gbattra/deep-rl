@@ -98,7 +98,7 @@ def gw_dynamics() -> np.ndarray:
     dynamics = np.zeros((N_STATES, len(Action), N_STATES, 2))
     for s in range(N_STATES):
         for a in range(len(Action)):
-            s_prime, rwd = transition(s, a)
+            s_prime, rwd = transition(s, Action(a))
             dynamics[s, a, s_prime, :] = 1, rwd
 
     # override transition for goal states to transport agent

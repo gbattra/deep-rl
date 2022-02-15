@@ -16,7 +16,13 @@ def main():
     policy = np.ones((N_STATES, len(Action))) / float(len(Action))
     dynamics = gw_dynamics()
     values = policy_evaluation(policy, dynamics)
-    print(values)
+
+    print('Value Function:')
+    print(np.flip(
+            np.round(values, 1).reshape(
+                int(np.sqrt(N_STATES)),
+                int(np.sqrt(N_STATES))),
+            axis=0))
 
 
 if __name__ == '__main__':

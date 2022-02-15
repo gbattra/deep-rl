@@ -55,5 +55,7 @@ def policy_evaluation(
         # check if converged
         if delta <= THETA:
             break
-
+        
+        i += 1
+    
     return V
