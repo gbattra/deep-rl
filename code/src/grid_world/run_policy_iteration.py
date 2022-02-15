@@ -22,12 +22,23 @@ def main():
         readable_policy.append(str(Action(a)).replace('Action.', ''))
     readable_policy = np.array(readable_policy)
 
-    print('Value Function:')
-    print(np.flip(
-            readable_policy.reshape(
-                int(np.sqrt(N_STATES)),
-                int(np.sqrt(N_STATES))),
-            axis=0))
+    flipped_readable_policy = np.flip(
+        readable_policy.reshape(
+            int(np.sqrt(N_STATES)),
+            int(np.sqrt(N_STATES))),
+        axis=0)
+    flipped_argmax_policy = np.flip(
+        argmax_policy.reshape(
+            int(np.sqrt(N_STATES)),
+            int(np.sqrt(N_STATES))),
+        axis=0)
+
+    plt.matshow(flipped_argmax_policy)
+    for (i, j), z in np.ndenumerate(flipped_readable_policy):
+        plt.text(i, j, flipped_readable_policy[j, i], ha='center', va='center',
+                bbox=dict(boxstyle='round', facecolor='white', edgecolor='0.3'))
+                
+    plt.show()
 
 
 if __name__ == '__main__':
