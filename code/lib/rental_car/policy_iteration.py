@@ -35,6 +35,7 @@ def policy_evaluation(
         delta = 0
         # re-estimate value for each state
         for s in range(n_states):
+            print(f'Policy Eval: {i}, state: {s}/{n_states}', end='\r')
             # current value for state s
             old_v = V[s]
             # the value for state s to compute
@@ -81,6 +82,7 @@ def policy_iteration(
 
         stable = True
         for s in range(n_states):
+            print(f'Policy Iter: {i}, state: {s}/{n_states}', end='\r')
             a_values = []
             for a in range(n_actions):
                 # prob of choosing action a at state s
