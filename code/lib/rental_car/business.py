@@ -9,10 +9,11 @@ car business
 import numpy as np
 
 from typing import Tuple
-from lib.rental_car.site import Site, N_CAR_MOVES, MAX_CARS, rewards, transition
+from lib.rental_car.site import (
+    STATE_SPACE, Site, N_CAR_MOVES, MAX_CARS, rewards, transition)
 
 
-N_STATES = (N_CAR_MOVES + MAX_CARS) ** 2
+N_STATES = STATE_SPACE ** 2
 ACTIONS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 
