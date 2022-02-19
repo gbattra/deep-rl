@@ -11,7 +11,8 @@ import math
 from dataclasses import dataclass
 
 MAX_CARS: int = 20
-N_MOVES: int = 5
+N_CAR_MOVES: int = 5
+N_ACIONS: int = 11
 REQ_RWD: int = 10
 MOVE_RWD: int = -2
 
@@ -38,7 +39,7 @@ def build_site_dynamics(site: Site) -> None:
     '''
     Setup the dynamics for a given site
     '''
-    for n in range(MAX_CARS + N_MOVES):
+    for n in range(MAX_CARS + N_CAR_MOVES):
         site.req_dynamics[n] = poisson(n, site.req_lambda)
         site.ret_dynamics[n] = poisson(n, site.ret_lambda)
 
@@ -50,12 +51,18 @@ def compute_transitions(site: Site) -> None:
     mappings.
     '''
     # we can start the day with MAX_CARS + N_MOVES cars at a site
-    for start in range(MAX_CARS + N_MOVES):
+    for start in range(MAX_CARS + N_CAR_MOVES):
+        # if start state has zero cars, out of bisiness
+        if start == 0:
+            return .0
         for end in range(MAX_CARS):
+            # only one site can have > 20 cars
+            if start > MAX_CARS and end > MAX_CARS:
+                return .0
             p = .0
             # MAX_CARS + N_MOVES = 25 (the max number of cars at a lot after hours)
-            for n_req in range(MAX_CARS + N_MOVES):
-                for n_ret in range(MAX_CARS + N_MOVES):
+            for n_req in range(MAX_CARS + N_CAR_MOVES):
+                for n_ret in range(MAX_CARS + N_CAR_MOVES):
                     delta = start - n_req
                     # if we receive more requests than cars in the lot,
                     # business is lost
@@ -90,6 +97,7 @@ def next_start(s: int, a: int, site: Site) -> int:
     '''
     # if sign = -1 and a < 0: add cars to this site; if a > 0, remove cars from site
     # if sign = 1 and a < 0: remove cars from this stie; if a > 0, add cars to this site
+    a -= N_CAR_MOVES
     return s + (site.sign * a)
 
 
