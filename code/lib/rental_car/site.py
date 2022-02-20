@@ -5,17 +5,19 @@
 Domain representation of the rental car problem
 '''
 
+from os import stat
 from typing import Tuple
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 from dataclasses import dataclass
 
 MAX_CARS_START: int = 25
 MAX_CARS_END: int = 20
 N_CAR_MOVES: int = 5
-REQ_RWD: int = 10
-MOVE_RWD: int = -2
+REQ_RWD: float = 10.
+MOVE_RWD: float = -2.
 
 @dataclass
 class Site:
@@ -52,9 +54,9 @@ def site_build_dynamics(
     '''
     Setup the dynamics for a given site
     '''
-    req_dynamics = np.zeros((MAX_CARS_START))
-    ret_dynamics = np.zeros((MAX_CARS_START))
-    for s in range(MAX_CARS_START):
+    req_dynamics = np.zeros((MAX_CARS_START + 1))
+    ret_dynamics = np.zeros((MAX_CARS_START + 1))
+    for s in range(MAX_CARS_START + 1):
         req_dynamics[s] = poisson(s, req_lambda)
         ret_dynamics[s] = poisson(s, ret_lambda)
 
@@ -70,23 +72,21 @@ def site_compute_transitions(
     mappings.
     '''
     # we can start the day with MAX_CARS + N_MOVES cars at a site
-    transitions = np.zeros((MAX_CARS_START, MAX_CARS_END))
-    rewards = np.zeros((MAX_CARS_START))
-    for start in range(MAX_CARS_START):
-        for end in range(MAX_CARS_END):
-            # if start state has zero cars, out of bisiness
-            if start == 0:
-                transitions[start, end] = .0
-                continue
+    transitions = np.zeros((MAX_CARS_START + 1, MAX_CARS_END + 1))
+    rewards = np.zeros((MAX_CARS_START + 1, MAX_CARS_END + 1))
+    for start in range(MAX_CARS_START + 1):
+        if start == 0:
+            continue
 
+        rwd = 0
+        rwd_counter = 0
+        for end in range(MAX_CARS_END + 1):
             p = .0
-            for n_req in range(MAX_CARS_START):
-                for n_ret in range(MAX_CARS_START):
-                    delta = start - n_req
-                    # if we receive more requests than cars in the lot,
-                    # business is lost
-                    if delta <= 0:
-                        continue
+            for n_req in range(MAX_CARS_END):
+                delta = start - n_req
+                if delta <= 0:
+                    continue
+                for n_ret in range(MAX_CARS_END):
                     # if the state after requests and returns doesn't match end state
                     # ignore this case / continue
                     if delta + n_ret != end:
@@ -95,20 +95,22 @@ def site_compute_transitions(
                     # add probability of receiving n_requests and n_returns to
                     # running probability
                     p += req_dynamics[n_req] * ret_dynamics[n_ret]
+                    rwd += req_dynamics[n_req] * REQ_RWD
+            rwd_counter += 1
 
             # store the computed joint probabilities in the transition matrix
             transitions[start, end] = p
 
-        # compute rewards
-        rwd = 0
-        n_cars = start
-        while n_cars > 0:
-            # rwd += the probability of n_cars requests in a day X the reward
-            # for renting n_cars
-            rwd += req_dynamics[n_cars] * (n_cars * REQ_RWD)
-            n_cars -= 1
-        rewards[start] = rwd
+            rewards[start, end] = rwd
     return transitions, rewards
+
+
+def action_idx_to_value(a: int, site: Site) -> int:
+    '''
+    if sign = -1 and a < 0: add cars to this site; if a > 0, remove cars from site
+    if sign = 1 and a < 0: remove cars from this stie; if a > 0, add cars to this site
+    '''
+    return (site.sign * (a - N_CAR_MOVES))
 
 
 def site_next_start(s: int, a: int, site: Site) -> int:
@@ -116,22 +118,22 @@ def site_next_start(s: int, a: int, site: Site) -> int:
     Compute the next start state (deterministic) for a
     given site
     '''
-    # if sign = -1 and a < 0: add cars to this site; if a > 0, remove cars from site
-    # if sign = 1 and a < 0: remove cars from this stie; if a > 0, add cars to this site
-    a_prime = (site.sign * (a - N_CAR_MOVES))
+    a_val = action_idx_to_value(a, site)
     # clamp between 25 and 0
     return np.minimum(
                     MAX_CARS_START,
-                    np.maximum(0, int(s + a_prime)))
+                    np.maximum(0, int(s + a_val)))
 
 
-def site_reward(s: int, a: int, site: Site) -> float:
+def site_reward(s: int, a: int, s_prime: int, site: Site) -> float:
     '''
     Get the expected reward for taking action a at state s for
     a given site
     '''
-    s_prime = site_next_start(s, a, site)
-    return site.rewards[s_prime]
+    start = site_next_start(s, a, site)
+    a_val = action_idx_to_value(a, site)
+    rwd = site.rewards[start, s_prime] + (-1. * np.abs(a_val))
+    return rwd
     
 
 def site_transition(s_prime: int, s: int, a: int, site: Site) -> float:

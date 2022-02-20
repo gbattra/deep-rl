@@ -30,12 +30,12 @@ def policy_evaluation(
     # iter counter to avoid inf loop
     i = 0
     # update values for all states until convergence
+    print('')
     while True and i < MAX_ITER:
         # the change in the values after this iteration
         delta = 0
         # re-estimate value for each state
         for s in range(n_states):
-            print(f'Policy Eval: {i}, state: {s}/{n_states}', end='\r')
             # current value for state s
             old_v = V[s]
             # the value for state s to compute
@@ -50,12 +50,14 @@ def policy_evaluation(
                     # value at s_prime
                     v = V[s_prime]
                     # add value to running sum
-                    s_sum += p * (r + DISCOUNT_FACTOR * v)
+                    s_sum += p * (r + (DISCOUNT_FACTOR * v))
                 v_sum += a_prob * s_sum
             # update value function for state s
             V[s] = v_sum
             # update delta in value for state s
             delta = np.maximum(delta, np.abs(V[s] - old_v))
+
+        print(f'Policy Eval: {i}, delta: {delta}', end='\r')
         # check if converged
         if delta <= THETA:
             break
@@ -66,20 +68,19 @@ def policy_evaluation(
 
 
 def policy_iteration(
+    policy: np.ndarray,
     dynamics: np.ndarray,
     n_states: int,
     n_actions: int) -> np.ndarray:
     '''
     Estimate the optimal policy using policy iteration
     '''
-    # instantiate arbitrary policy
-    policy = np.zeros((n_states, n_actions))
-
     i = 0
-    while True and i < MAX_ITER:
+    while True and i < 2:
         # estimate value function for policy
         V = policy_evaluation(policy, dynamics, n_states, n_actions)
 
+        print('')
         stable = True
         for s in range(n_states):
             print(f'Policy Iter: {i}, state: {s}/{n_states}', end='\r')
@@ -93,7 +94,7 @@ def policy_iteration(
                     # value at s_prime
                     v = V[s_prime]
                     # add value to running sum
-                    s_sum += p * (r + DISCOUNT_FACTOR * v)
+                    s_sum += p * (r + (DISCOUNT_FACTOR * v))
                 a_values.append(s_sum)
             # store the current policy action for comparison
             old_a = np.argmax(policy[s])

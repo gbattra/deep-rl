@@ -6,6 +6,7 @@ Run policy iteration on the simple version of the rental car problem
 '''
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from lib.rental_car.business import N_STATES, ACTIONS, business_dynamics
 from lib.rental_car.policy_iteration import policy_iteration
@@ -34,7 +35,18 @@ def main():
         SITE_B_CONFIG['ret_lambda'],
         SITE_B_CONFIG['sign'])
     biz_dynamics = business_dynamics(site_a, site_b)
-    policy = policy_iteration(biz_dynamics, N_STATES, len(ACTIONS))
+
+    policy = np.zeros((N_STATES, len(ACTIONS)))
+    policy[:, 5] = 1.
+    policy = policy_iteration(policy, biz_dynamics, N_STATES, len(ACTIONS))
+
+    argmax_policy = np.argmax(policy, axis=1).reshape(
+                int(np.sqrt(N_STATES)),
+                int(np.sqrt(N_STATES)))
+    plt.matshow(argmax_policy)
+
+    plt.gca().invert_yaxis()
+    plt.show()
     print(policy)
 
 
