@@ -56,8 +56,8 @@ def business_dynamics(site_a: Site, site_b: Site) -> np.ndarray:
                 p_b = site_transition(end_b, start_b, a, site_b)
 
                 # expected rewards taking action a at site s for each site
-                r_a = site_reward(start_a, a, end_a, site_a)
-                r_b = site_reward(start_b, a, end_b, site_b)
+                r_a = site_reward(start_a, a, site_a)
+                r_b = site_reward(start_b, a, site_b)
 
                 # print(f'[s_a: {start_a}, s_b: {start_b}, a: {a}] -> [e_a: {end_a}, e_b: {end_b}]')
                 # print(f'p_a: {p_a}, p_b: {p_b}, r_a: {r_a}, r_b: {r_b}')

@@ -16,8 +16,10 @@ from dataclasses import dataclass
 MAX_CARS_START: int = 25
 MAX_CARS_END: int = 20
 N_CAR_MOVES: int = 5
+DYNAMICS_DIST_SIZE: int = 11
 REQ_RWD: float = 10.
 MOVE_RWD: float = -2.
+
 
 @dataclass
 class Site:
@@ -54,9 +56,9 @@ def site_build_dynamics(
     '''
     Setup the dynamics for a given site
     '''
-    req_dynamics = np.zeros((MAX_CARS_START + 1))
-    ret_dynamics = np.zeros((MAX_CARS_START + 1))
-    for s in range(MAX_CARS_START + 1):
+    req_dynamics = np.zeros((DYNAMICS_DIST_SIZE + 1))
+    ret_dynamics = np.zeros((DYNAMICS_DIST_SIZE + 1))
+    for s in range(DYNAMICS_DIST_SIZE + 1):
         req_dynamics[s] = poisson(s, req_lambda)
         ret_dynamics[s] = poisson(s, ret_lambda)
 
@@ -73,35 +75,21 @@ def site_compute_transitions(
     '''
     # we can start the day with MAX_CARS + N_MOVES cars at a site
     transitions = np.zeros((MAX_CARS_START + 1, MAX_CARS_END + 1))
-    rewards = np.zeros((MAX_CARS_START + 1, MAX_CARS_END + 1))
+    rewards = np.zeros((MAX_CARS_START + 1))
     for start in range(MAX_CARS_START + 1):
-        if start == 0:
-            continue
+        rwd = .0
+        for n_req in range(DYNAMICS_DIST_SIZE):
+            if n_req > start:
+                continue
+            p_req = req_dynamics[n_req]
+            rwd += p_req * (n_req * REQ_RWD)
 
-        rwd = 0
-        rwd_counter = 0
-        for end in range(MAX_CARS_END + 1):
-            p = .0
-            for n_req in range(MAX_CARS_END):
-                delta = start - n_req
-                if delta <= 0:
-                    continue
-                for n_ret in range(MAX_CARS_END):
-                    # if the state after requests and returns doesn't match end state
-                    # ignore this case / continue
-                    if delta + n_ret != end:
-                        continue
-
-                    # add probability of receiving n_requests and n_returns to
-                    # running probability
-                    p += req_dynamics[n_req] * ret_dynamics[n_ret]
-                    rwd += req_dynamics[n_req] * REQ_RWD
-            rwd_counter += 1
-
-            # store the computed joint probabilities in the transition matrix
-            transitions[start, end] = p
-
-            rewards[start, end] = rwd
+            for n_ret in range(DYNAMICS_DIST_SIZE):
+                end = start - n_req + n_ret
+                end = np.minimum(np.maximum(end, 0), MAX_CARS_END)
+                p_ret = ret_dynamics[n_ret]
+                transitions[start, end] += p_req * p_ret
+        rewards[start] = rwd
     return transitions, rewards
 
 
@@ -120,19 +108,19 @@ def site_next_start(s: int, a: int, site: Site) -> int:
     '''
     a_val = action_idx_to_value(a, site)
     # clamp between 25 and 0
-    return np.minimum(
-                    MAX_CARS_START,
-                    np.maximum(0, int(s + a_val)))
+    return int(s + a_val)
 
 
-def site_reward(s: int, a: int, s_prime: int, site: Site) -> float:
+def site_reward(s: int, a: int, site: Site) -> float:
     '''
     Get the expected reward for taking action a at state s for
     a given site
     '''
     start = site_next_start(s, a, site)
     a_val = action_idx_to_value(a, site)
-    rwd = site.rewards[start, s_prime] + (-1. * np.abs(a_val))
+    if start < 0:
+        return -1. * np.abs(a_val)
+    rwd = site.rewards[start] + (-1. * np.abs(a_val))
     return rwd
     
 
@@ -142,4 +130,6 @@ def site_transition(s_prime: int, s: int, a: int, site: Site) -> float:
     action a at state s for a given site
     '''
     start = site_next_start(s, a, site)
+    if start < 0:
+        return .0
     return site.transitions[start, s_prime]
