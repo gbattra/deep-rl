@@ -29,11 +29,13 @@ def main():
     site_a = site_init(
         SITE_A_CONFIG['req_lambda'],
         SITE_A_CONFIG['ret_lambda'],
-        SITE_A_CONFIG['sign'])
+        SITE_A_CONFIG['sign'],
+        modified=True)
     site_b = site_init(
         SITE_B_CONFIG['req_lambda'],
         SITE_B_CONFIG['ret_lambda'],
-        SITE_B_CONFIG['sign'])
+        SITE_B_CONFIG['sign'],
+        modified=True)
     biz_dynamics = business_dynamics(site_a, site_b)
 
     policy = np.zeros((N_STATES, len(ACTIONS)))
@@ -47,7 +49,6 @@ def main():
 
     plt.gca().invert_yaxis()
     plt.show()
-    print(policy)
 
 
 if __name__ == '__main__':

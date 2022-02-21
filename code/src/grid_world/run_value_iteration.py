@@ -8,15 +8,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from lib.grid_world.grid_world import N_STATES, gw_dynamics, Action
-from lib.grid_world.value_iteration import value_iteration
+from lib.dynamic_programming.grid_world.grid_world import N_STATES, gw_dynamics, Action
+from lib.dynamic_programming.value_iteration import value_iteration
 
 
 def main():
     dynamics = gw_dynamics()
-    policy = value_iteration(dynamics)
+    policy = value_iteration(dynamics, N_STATES, len(Action))
     argmax_policy = np.argmax(policy, axis=1)
-
+    
     readable_policy = []
     for a in argmax_policy:
         readable_policy.append(str(Action(a)).replace('Action.', ''))

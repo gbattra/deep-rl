@@ -7,15 +7,13 @@ Implementation of value iteration
 
 import numpy as np
 
-from lib.grid_world.grid_world import N_STATES, Action
-
 
 MAX_ITER = 10000
 DISCOUNT_FACTOR = 0.9
 THETA = 10e-3
 
 
-def value_iteration(dynamics: np.ndarray) -> np.ndarray:
+def value_iteration(dynamics: np.ndarray, n_states: int, n_actions: int) -> np.ndarray:
     '''
     Iterate over the state space to estimate the value of each
     state using value iteration.
@@ -23,8 +21,8 @@ def value_iteration(dynamics: np.ndarray) -> np.ndarray:
     Output a deterministic policy approximating the optimal policy.
     '''
     # instantiate value function and policy
-    V = np.zeros((N_STATES))
-    policy = np.zeros((N_STATES, len(Action)))
+    V = np.zeros((n_states))
+    policy = np.zeros((n_states, n_actions))
 
     # iter counter to avoid inf loop
     i = 0
@@ -32,16 +30,16 @@ def value_iteration(dynamics: np.ndarray) -> np.ndarray:
     while True and i < MAX_ITER:
         # the change in the values after this iteration
         delta = 0
-        for s in range(N_STATES):
+        for s in range(n_states):
             # current value for state s
             old_v = V[s]
             # the value for state s to compute
             v_sum = 0
             a_values = []
-            for a in range(len(Action)):
+            for a in range(n_actions):
                 # prob of choosing action a at state s
                 s_sum = 0
-                for s_prime in range(N_STATES):
+                for s_prime in range(n_states):
                     # rwd and prob of entering s_prime from state s taking aciton a
                     p, r = dynamics[s, a, s_prime]
                     # value at s_prime

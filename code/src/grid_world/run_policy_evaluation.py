@@ -8,14 +8,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from lib.grid_world.grid_world import N_STATES, gw_dynamics, Action
-from lib.grid_world.policy_iteration import policy_evaluation
+from lib.dynamic_programming.grid_world.grid_world import N_STATES, gw_dynamics, Action
+from lib.dynamic_programming.policy_iteration import policy_evaluation
 
 
 def main():
     policy = np.ones((N_STATES, len(Action))) / float(len(Action))
     dynamics = gw_dynamics()
-    values = policy_evaluation(policy, dynamics).reshape(
+    values = policy_evaluation(policy, dynamics, N_STATES, len(Action)).reshape(
                 int(np.sqrt(N_STATES)),
                 int(np.sqrt(N_STATES)))
     
