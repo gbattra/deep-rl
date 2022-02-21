@@ -22,8 +22,6 @@ MOVE_RWD: float = -2.
 @dataclass
 class Site:
     sign: int
-    req_dynamics: np.ndarray
-    ret_dynamics: np.ndarray
     transitions: np.ndarray
     rewards: np.ndarray
     has_assistant: bool
@@ -39,39 +37,16 @@ def site_init(
     '''
     Build a site given its config and the state/action space
     '''
-    req_dynamics, ret_dynamics = site_build_dynamics(req_lambda, ret_lambda)
     transitions, rewards = site_compute_transitions(req_lambda, ret_lambda)
-    return Site(sign, req_dynamics, ret_dynamics, transitions, rewards, has_assistant, overflow_penalty)
+    return Site(sign, transitions, rewards, has_assistant, overflow_penalty)
 
-
-def poisson_dist(n: float, lam: float) -> float:
-    '''
-    Compute the poisson probability of 'n' given a
-    lambda of 'lam'
-    '''
-    # return ((lam**n) / math.factorial(n)) * (np.e ** -lam)
-    return poisson.pmf(k=n, mu=lam)
-
-
-def site_build_dynamics(
-        req_lambda: float,
-        ret_lambda: float) -> Tuple[np.ndarray, np.ndarray]:
-    '''
-    Setup the dynamics for a given site
-    '''
-    req_dynamics = np.zeros((DYNAMICS_DIST_SIZE + 1))
-    ret_dynamics = np.zeros((DYNAMICS_DIST_SIZE + 1))
-    for s in range(DYNAMICS_DIST_SIZE + 1):
-        req_dynamics[s] = poisson_dist(s, req_lambda)
-        ret_dynamics[s] = poisson_dist(s, ret_lambda)
-
-    return req_dynamics, ret_dynamics
 
 
 def req_dist(state: int, req_lambda: float) -> np.ndarray:
     '''
     Compute the likelihood of getting n = 0 -> 25 requests
     given a start state
+    Credit: Xueguang Lyu
     '''
     k = np.arange(0, -26, step=-1) + state
     return poisson.pmf(k=k, mu=req_lambda)
@@ -81,7 +56,7 @@ def ret_dist(ret_lambda: float) -> np.ndarray:
     '''
     Compute likelihood of getting n = 0 -> 25 returns
     in a day at start state
-    Inspired by code
+    Credit: Xueguang Lyu
     '''
     k = np.arange(0, 26, step=1)
     return poisson.pmf(k=k, mu=ret_lambda)
@@ -110,6 +85,7 @@ def site_compute_transitions(
                 p_ret = ret_dynamics[n_ret]
                 transitions[start, end] += p_req * p_ret
         
+        # computing the average reward. Credit: Xueguang Lyu
         req_probs = req_dist(start, req_lambda)
         rwd = np.average([REQ_RWD * n for n in range(0, 26)], axis=0, weights=req_probs)
         rewards[start] = rwd
