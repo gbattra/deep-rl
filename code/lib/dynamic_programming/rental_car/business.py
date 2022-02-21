@@ -9,7 +9,7 @@ car business
 import numpy as np
 
 from typing import Tuple
-from lib.rental_car.site import (
+from lib.dynamic_programming.rental_car.site import (
     MAX_CARS_END, Site, site_next_start, site_reward, site_transition)
 
 

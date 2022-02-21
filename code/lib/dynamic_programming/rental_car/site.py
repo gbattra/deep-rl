@@ -5,11 +5,8 @@
 Domain representation of the rental car problem
 '''
 
-from os import stat
 from typing import Tuple
 import numpy as np
-import math
-import matplotlib.pyplot as plt
 
 from scipy.stats import poisson
 from dataclasses import dataclass
@@ -29,19 +26,22 @@ class Site:
     ret_dynamics: np.ndarray
     transitions: np.ndarray
     rewards: np.ndarray
+    has_assistant: bool
+    overflow_penalty: bool
 
 
 def site_init(
     req_lambda: float,
     ret_lambda: float,
     sign: float,
-    modified: bool = False) -> Site:
+    has_assistant: bool = False,
+    overflow_penalty: bool = False) -> Site:
     '''
     Build a site given its config and the state/action space
     '''
     req_dynamics, ret_dynamics = site_build_dynamics(req_lambda, ret_lambda)
     transitions, rewards = site_compute_transitions(req_lambda, ret_lambda)
-    return Site(sign, req_dynamics, ret_dynamics, transitions, rewards)
+    return Site(sign, req_dynamics, ret_dynamics, transitions, rewards, has_assistant, overflow_penalty)
 
 
 def poisson_dist(n: float, lam: float) -> float:
@@ -143,7 +143,10 @@ def site_reward(s: int, a: int, site: Site) -> float:
     a_val = action_idx_to_value(a, site)
     if start < 0:
         return -1. * np.abs(a_val)
-    rwd = site.rewards[start] + (-1. * np.abs(a_val))
+    
+    overflow_penalty = 4 if site.overflow_penalty and start > 10 else 0
+    a_val_prime = max(0, a_val - 1) if site.has_assistant else a_val
+    rwd = site.rewards[start] + (-1. * np.abs(a_val_prime)) - overflow_penalty
     return rwd
     
 
