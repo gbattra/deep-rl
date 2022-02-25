@@ -6,6 +6,7 @@ Implementation of MC Evaluation for Blackjack
 '''
 
 from collections import defaultdict
+from copy import deepcopy
 from email import policy
 import gym
 import numpy as np
@@ -69,7 +70,7 @@ def first_visit_mc(
 
 def first_visit_mc_es(
         env: gym.Env,
-        discount_factor: float,
+        gamma: float,
         n_eps: int) -> Tuple[defaultdict, Callable]:
 
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
@@ -80,16 +81,19 @@ def first_visit_mc_es(
     for _ in trange(n_eps, desc='Episode:'):
         episode = generate_episode(env, policy, True)
         G = 0
+
+        q = Q.copy()
+        n = N.copy()
+
         for t in range(len(episode) - 1, -1, -1):
             s, a, r = episode[t]
-            G = (discount_factor * G) + r
+            G = (gamma * G) + r
+            
+            n[s][a] = N[s][a] + 1
+            q[s][a] = Q[s][a] + ((1. / float(n[s][a])) * (G - Q[s][a]))
+        
+        for s in q:
+            N[s] = n[s]
+            Q[s] = q[s]
 
-            state_found = False
-            for s_prime, _, _ in episode[:t]:
-                if s == s_prime:
-                    state_found = True
-            if not state_found:
-                def_arr = [0] * env.action_space.n
-                N[s][a] = N.get(s, def_arr)[a] + 1
-                Q[s][a] = Q.get(s, def_arr)[a] + ((1. / float(N[s][a])) * (G - Q.get(s, def_arr)[a]))
     return Q, policy

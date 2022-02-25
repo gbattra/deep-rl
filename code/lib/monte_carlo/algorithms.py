@@ -33,74 +33,6 @@ def generate_episode(env: gym.Env, policy: Callable, es: bool = False):
     return episode
 
 
-def on_policy_mc_evaluation(
-    env: gym.Env,
-    policy: Callable,
-    num_episodes: int,
-    gamma: float,
-) -> defaultdict:
-    """On-policy Monte Carlo policy evaluation. First visits will be used.
-
-    Args:
-        env (gym.Env): a Gym API compatible environment
-        policy (Callable): A function that represents the policy.
-        num_episodes (int): Number of episodes
-        gamma (float): Discount factor of MDP
-
-    Returns:
-        V (defaultdict): The values for each state. V[state] = value.
-    """
-    # We use defaultdicts here for both V and N for convenience. The states will be the keys.
-    V = defaultdict(float)
-    N = defaultdict(int)
-
-    for _ in trange(num_episodes, desc="Episode"):
-        episode = generate_episode(env, policy)
-
-        G = 0
-        for t in range(len(episode) - 1, -1, -1):
-            # TODO Q3a
-            # Update V and N here according to first visit MC
-            pass
-    return V
-
-
-def on_policy_mc_control_es(
-    env: gym.Env, num_episodes: int, gamma: float
-) -> Tuple[defaultdict, Callable]:
-    """On-policy Monte Carlo control with exploring starts for Blackjack
-
-    Args:
-        env (gym.Env): a Gym API compatible environment
-        num_episodes (int): Number of episodes
-        gamma (float): Discount factor of MDP
-    """
-    # We use defaultdicts here for both Q and N for convenience. The states will be the keys and the values will be numpy arrays with length = num actions
-    Q = defaultdict(lambda: np.zeros(env.action_space.n))
-    N = defaultdict(lambda: np.zeros(env.action_space.n))
-
-    # If the state was seen, use the greedy action using Q values.
-    # Else, default to the original policy of sticking to 20 or 21.
-    policy = create_blackjack_policy(Q)
-
-    for _ in trange(num_episodes, desc='Episode:'):
-        episode = generate_episode(env, policy, True)
-        G = 0
-        for t in range(len(episode) - 1, -1, -1):
-            s, a, r = episode[t]
-            G = (gamma * G) + r
-
-            state_found = False
-            for s_prime, _, _ in episode[:t]:
-                if s == s_prime:
-                    state_found = True
-            if not state_found:
-                def_arr = [0] * env.action_space.n
-                N[s][a] = N.get(s, def_arr)[a] + 1
-                Q[s][a] = Q.get(s, def_arr)[a] + ((1. / float(N[s][a])) * (G - Q.get(s, def_arr)[a]))
-    return Q, policy
-
-
 def on_policy_mc_control_epsilon_soft(
     env: gym.Env, num_episodes: int, gamma: float, epsilon: float
 ):
@@ -115,16 +47,32 @@ def on_policy_mc_control_epsilon_soft(
 
     """
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
+    N = defaultdict(lambda: np.zeros(env.action_space.n))
 
     policy = create_epsilon_policy(Q, epsilon)
-
     returns = np.zeros(num_episodes)
-    for _ in trange(num_episodes, desc="Episode", leave=False):
+    
+    for i in trange(num_episodes, desc="Episode", leave=False):
         # TODO Q4
         # For each episode calculate the return
         # Update Q
         # Note there is no need to update the policy here directly.
         # By updating Q, the policy will automatically be updated.
-        pass
+        episode = generate_episode(env, policy, True)
+        G = 0
 
+        q = Q.copy()
+        n = N.copy()
+
+        for t in range(len(episode) - 1, -1, -1):
+            s, a, r = episode[t]
+            G = (gamma * G) + r
+            
+            n[s][a] = N[s][a] + 1
+            q[s][a] = Q[s][a] + ((1. / float(n[s][a])) * (G - Q[s][a]))
+
+        returns[i] = G
+        for s in q:
+            N[s] = n[s]
+            Q[s] = q[s]
     return returns

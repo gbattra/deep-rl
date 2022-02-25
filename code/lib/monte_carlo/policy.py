@@ -59,9 +59,9 @@ def create_epsilon_policy(Q: defaultdict, epsilon: float) -> Callable:
         # You can reuse code from ex1
         # Make sure to break ties arbitrarily
         if np.random.random() < epsilon:
-            action = None
+            action = np.random.randint(0, num_actions)
         else:
-            action = None
+            action = np.random.choice(np.flatnonzero(Q[state] == Q[state].max()))
 
         return action
 
