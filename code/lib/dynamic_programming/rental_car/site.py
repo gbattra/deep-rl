@@ -121,7 +121,7 @@ def site_reward(s: int, a: int, site: Site) -> float:
         return -1. * np.abs(a_val)
     
     overflow_penalty = 4 if site.overflow_penalty and start > 10 else 0
-    a_val_prime = max(0, a_val - 1) if site.has_assistant else a_val
+    a_val_prime = max(0, a_val - 1) if site.has_assistant and a_val < 0 else a_val
     rwd = site.rewards[start] + (-1. * np.abs(a_val_prime)) - overflow_penalty
     return rwd
     
