@@ -83,12 +83,21 @@ def on_policy_mc_control_es(
     # Else, default to the original policy of sticking to 20 or 21.
     policy = create_blackjack_policy(Q)
 
-    for _ in trange(num_episodes, desc="Episode"):
-        # TODO Q3b
-        # Note there is no need to update the policy here directly.
-        # By updating Q, the policy will automatically be updated.
-        pass
+    for _ in trange(num_episodes, desc='Episode:'):
+        episode = generate_episode(env, policy, True)
+        G = 0
+        for t in range(len(episode) - 1, -1, -1):
+            s, a, r = episode[t]
+            G = (gamma * G) + r
 
+            state_found = False
+            for s_prime, _, _ in episode[:t]:
+                if s == s_prime:
+                    state_found = True
+            if not state_found:
+                def_arr = [0] * env.action_space.n
+                N[s][a] = N.get(s, def_arr)[a] + 1
+                Q[s][a] = Q.get(s, def_arr)[a] + ((1. / float(N[s][a])) * (G - Q.get(s, def_arr)[a]))
     return Q, policy
 
 
