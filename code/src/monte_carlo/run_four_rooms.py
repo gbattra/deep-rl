@@ -5,6 +5,7 @@
 Exectuable for running four rooms MC control
 '''
 
+from cProfile import label
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -36,7 +37,7 @@ def main():
             trial_returns.append(returns)
 
         avg_ret = np.average(trial_returns, axis=0)
-        plt.plot(avg_ret, color=clr)
+        plt.plot(avg_ret, color=clr, label=f'Epsilon: {str(eps)}')
         
         stde_avg_ret = 1.96 * (np.std(avg_ret) / np.sqrt(N_TRIALS))
         y_neg = avg_ret - stde_avg_ret
@@ -48,13 +49,14 @@ def main():
             alpha=0.2,
             color=clr)
 
-    opt_rwd = (GAMMA**SHORTEST_PATH) + GOAL_RWD
+    opt_rwd = (GAMMA**SHORTEST_PATH) * GOAL_RWD
     plt.plot(
         [opt_rwd] * N_EPISODES,
         color='k',
         linestyle='solid',
         label='Upper Bound')
 
+    plt.legend(loc='upper left')
     plt.show()
 
 if __name__ == '__main__':
