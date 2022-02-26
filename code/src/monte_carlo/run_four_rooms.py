@@ -5,7 +5,6 @@
 Exectuable for running four rooms MC control
 '''
 
-from cProfile import label
 import matplotlib.pyplot as plt
 import numpy as np
 

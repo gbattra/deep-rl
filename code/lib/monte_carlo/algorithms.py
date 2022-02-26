@@ -34,8 +34,7 @@ def generate_episode(env: gym.Env, policy: Callable, es: bool = False):
 
 
 def on_policy_mc_control_epsilon_soft(
-    env: gym.Env, num_episodes: int, gamma: float, epsilon: float
-):
+    env: gym.Env, num_episodes: int, gamma: float, epsilon: float) -> np.ndarray:
     """On-policy Monte Carlo policy control for epsilon soft policies.
 
     Args:

@@ -3,12 +3,16 @@ Template code modified by Gregory Attra
 02/26/2022
 """
 
+from email.policy import Policy
+from enum import IntEnum
 from turtle import st
 from typing import Callable, List, Optional, Tuple
 import numpy as np
 from gym import Env, spaces
 from gym.utils import seeding
 from gym.envs.registration import register
+from tqdm import trange
+from lib.monte_carlo.algorithms import generate_episode
 
 
 def track0():
@@ -82,6 +86,11 @@ def track1():
 	], dtype=np.int32)
 
 
+class RaceAction(IntEnum):
+	DECCELERATE = -1
+	COAST = 0
+	ACCELERATE = 1
+
 class Racetrack(Env):
 	MAX_VEL: int = 4
 	TRACK: int = 0
@@ -90,38 +99,29 @@ class Racetrack(Env):
 	GOAL: int = 3
 	STEP_RWD: float = -1.
 
-	def __init__(self, track: np.ndarray) -> None:
+	def __init__(self, track: np.ndarray, max_steps: int=450) -> None:
 		super().__init__()
 		self.track = track
-		self.action_space = spaces.Box((3, 3))
-		self.observation_space = spaces.Box(self.track.shape + (self.MAX_VEL, self.MAX_VEL))
-		self.q_space = self.observation_space.n + self.action_space.n
+		self.action_space = spaces.Discrete(len(RaceAction)**2)
+		self.observation_space = spaces.Tuple([
+			spaces.Discrete(self.track.shape[0]),
+			spaces.Discrete(self.track.shape[1]),
+			spaces.Discrete(self.MAX_VEL),
+			spaces.Discrete(self.MAX_VEL)])
 		self.vel = (0, 0)
 		self.pos = (0, 0)
-
-	def seed(self, seed: Optional[int] = None) -> List[int]:
-		"""
-		Credit: template code in env.py
-		Fix seed of environment
-
-		In order to make the environment completely reproducible, call this function and seed the action space as well.
-			env = gym.make(...)
-			env.seed(seed)
-			env.action_space.seed(seed)
-
-		This function does not need to be used for this assignment, it is given only for reference.
-		"""
-		self.np_random, seed = seeding.np_random(seed)
-		return [seed]
+		self.max_steps = max_steps
+		self.t = 0
 
 	def step(self, action: Tuple[int, int]) \
 			-> Tuple[Tuple[int, int, int, int], float, bool, dict]:
 		"""
 		Proceed one timestep in the racetrack episode
 		"""
-		dy = action[0] - 1
-		dx = action[1] - 1
-
+		self.t += 1
+		vy, vx = np.unravel_index(action, (len(RaceAction), len(RaceAction)))
+		dy = vy - 1
+		dx = vx - 1
 		new_vel = np.array(self.vel) + [dy, dx]
 		np.clip(new_vel, 0, self.MAX_VEL)
 		new_pos = np.array(self.pos) + new_vel
@@ -131,25 +131,37 @@ class Racetrack(Env):
 			new_vel = (0, 0)
 			new_pos = self._random_start()
 
-		self.pos = tuple(new_pos)
-		self.vel = tuple(new_vel)
+		self.pos = new_pos
+		self.vel = new_vel
 
-		return self.vel + self.pos, self.STEP_RWD, crosses_goal
-		
+		return (tuple(self.vel) + tuple(self.pos),
+				self.STEP_RWD,
+				crosses_goal or not valid_traj or self.t >= self.max_steps,
+				{})
+
+	def reset(self) -> Tuple[int, int, int, int]:
+		"""
+		Reset the agent positin and velocity
+		"""
+		new_vel = (0, 0)
+		new_pos = self._random_start()
+		self.t = 0
+		return new_vel + new_pos
 		
 	def _validate_traj(self, start: Tuple[int, int], end: Tuple[int, int]) \
 			-> Tuple[bool, bool]:
 		"""
 		Is the trajectory from start to end valid
 		"""
-		for pos in np.linspace(start, end, np.linalg.norm(self.track.shape)):
-			if pos[0] < 0 and pos[0] >= self.track.shape[0]:
+		for x, y in np.linspace(start, end, int(np.linalg.norm(self.track.shape))):
+			x, y = int(x), int(y)
+			if y < 0 or y >= self.track.shape[0]:
 				return False, False
-			if pos[1] < 0 and pos[1] >= self.track.shape[1]:
+			if x < 0 or x >= self.track.shape[1]:
 				return False, False
-			if self.track[pos] == self.GOAL:
+			if self.track[y, x] == self.GOAL:
 				return True, True
-			if self.track[pos] == self.WALL:
+			if self.track[y, x] == self.WALL:
 				return False, False
 
 		return True
@@ -169,19 +181,3 @@ class Racetrack(Env):
 		starting_line = np.argwhere(self.track==self.START)
 		start = np.random.choice(len(starting_line))
 		return tuple(starting_line[start])
-
-
-def racetrack_epsilon_policy(Q: np.ndarray, epsilon: float) -> Callable:
-	"""
-	Creates an epsilon-soft policy for the racetrack problem
-	"""
-	def get_action(state: Tuple) -> Tuple[int, int]:
-		if np.random.random() < epsilon:
-			action_idx = np.random.randint(len(Q[state].flatten()))
-			action = np.unravel_index(action_idx)
-		else:
-			action = np.unravel_index(np.argmax(Q[state]), Q[state].shape)
-		
-		return tuple(action)
-
-	return get_action

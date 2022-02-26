@@ -88,7 +88,8 @@ def first_visit_mc_es(
         for t in range(len(episode) - 1, -1, -1):
             s, a, r = episode[t]
             G = (gamma * G) + r
-            
+
+            # instead of checking if s encountered earlier, just override current value
             n[s][a] = N[s][a] + 1
             q[s][a] = Q[s][a] + ((1. / float(n[s][a])) * (G - Q[s][a]))
         
