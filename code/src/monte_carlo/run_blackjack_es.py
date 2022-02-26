@@ -30,7 +30,7 @@ def dict_to_array(d: Dict, shape: Tuple) -> np.ndarray:
 
 def main():
     env = gym.make(BLACKJACK_GAME_TAG)
-    Q_10k, policy = first_visit_mc_es(env, 1., 100000)
+    Q_10k, policy = first_visit_mc_es(env, 1., 500000)
     obs_dims = space_dims(env.observation_space)
     dims = obs_dims + (env.action_space.n,)
     Q_10k = dict_to_array(Q_10k, dims)

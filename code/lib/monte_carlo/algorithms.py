@@ -58,7 +58,7 @@ def on_policy_mc_control_epsilon_soft(
         # Update Q
         # Note there is no need to update the policy here directly.
         # By updating Q, the policy will automatically be updated.
-        episode = generate_episode(env, policy, True)
+        episode = generate_episode(env, policy)
         G = 0
 
         q = Q.copy()
