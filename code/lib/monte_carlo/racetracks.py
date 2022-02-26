@@ -99,7 +99,7 @@ class Racetrack(Env):
 	GOAL: int = 3
 	STEP_RWD: float = -1.
 
-	def __init__(self, track: np.ndarray, max_steps: int=450) -> None:
+	def __init__(self, track: np.ndarray, max_steps: int=450, psi: float=0.1) -> None:
 		super().__init__()
 		self.track = track
 		self.action_space = spaces.Discrete(len(RaceAction)**2)
@@ -112,21 +112,24 @@ class Racetrack(Env):
 		self.pos = (0, 0)
 		self.max_steps = max_steps
 		self.t = 0
+		self.psi = psi
 
-	def step(self, action: Tuple[int, int]) \
+	def step(self, action: int) \
 			-> Tuple[Tuple[int, int, int, int], float, bool, dict]:
 		"""
 		Proceed one timestep in the racetrack episode
 		"""
+		action_taken = self._action_slip(action)
 		self.t += 1
-		vy, vx = np.unravel_index(action, (len(RaceAction), len(RaceAction)))
+		vy, vx = np.unravel_index(action_taken, (len(RaceAction), len(RaceAction)))
 		dy = vy - 1
 		dx = vx - 1
-		new_vel = np.array(self.vel) + [dy, dx]
-		np.clip(new_vel, 0, self.MAX_VEL)
-		new_pos = np.array(self.pos) + new_vel
+		new_vel = [self.vel[0] + dy, self.vel[1] + dx]
+		new_vel = np.clip(new_vel, [0, 0], [self.MAX_VEL, self.MAX_VEL])
+
+		new_pos = [self.pos[0] - new_vel[0], self.pos[1] + new_vel[1]]
 		valid_traj, crosses_goal = self._validate_traj(self.pos, new_pos)
-		
+
 		if not valid_traj:
 			new_vel = (0, 0)
 			new_pos = self._random_start()
@@ -136,25 +139,31 @@ class Racetrack(Env):
 
 		return (tuple(self.vel) + tuple(self.pos),
 				self.STEP_RWD,
-				crosses_goal or not valid_traj or self.t >= self.max_steps,
+				crosses_goal or self.t >= self.max_steps,
 				{})
 
 	def reset(self) -> Tuple[int, int, int, int]:
 		"""
 		Reset the agent positin and velocity
 		"""
-		new_vel = (0, 0)
-		new_pos = self._random_start()
+		self.vel = (0, 0)
+		self.pos = self._random_start()
 		self.t = 0
-		return new_vel + new_pos
+		return self.vel + self.pos
+
+	def _action_slip(self, action: int) -> int:
+		"""
+		Slip the action with psi probability
+		"""
+		return action if np.random.random() > self.psi else 0
 		
 	def _validate_traj(self, start: Tuple[int, int], end: Tuple[int, int]) \
 			-> Tuple[bool, bool]:
 		"""
 		Is the trajectory from start to end valid
 		"""
-		for x, y in np.linspace(start, end, int(np.linalg.norm(self.track.shape))):
-			x, y = int(x), int(y)
+		for y, x in np.linspace(start, end, self.MAX_VEL):
+			y, x = int(y), int(x)
 			if y < 0 or y >= self.track.shape[0]:
 				return False, False
 			if x < 0 or x >= self.track.shape[1]:
@@ -164,7 +173,7 @@ class Racetrack(Env):
 			if self.track[y, x] == self.WALL:
 				return False, False
 
-		return True
+		return True, False
 
 
 	def _clamp_vel(self, vel: Tuple[int, int]) -> bool:
