@@ -14,7 +14,7 @@ from lib.monte_carlo.algorithms import on_policy_mc_control_epsilon_soft
 SHORTEST_PATH = 20
 N_EPISODES = int(10**4)
 GOAL_RWD = 1.0
-N_TRIALS = 2
+N_TRIALS = 10
 GAMMA = .99
 
 def main():
