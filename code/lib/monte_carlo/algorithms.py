@@ -131,12 +131,10 @@ def off_policy_mc_control_epsilon_soft(
         episode = generate_episode(env, t_policy)
         G = 0
 
-        q = Q.copy()
-        n = N.copy()
-
         for t in range(len(episode) - 1, -1, -1):
             s, a, r = episode[t]
             G = (gamma * G) + r
-        t_returns[t] = G
-        
+
+        t_returns[i] = G
+
     return b_returns, t_returns

@@ -12,18 +12,18 @@ import numpy as np
 from lib.monte_carlo.algorithms import off_policy_mc_control_epsilon_soft
 from lib.monte_carlo.racetracks import Racetrack, track0, track1
 
-N_EPISODES = int(10**4)
+N_EPISODES = int(10**2)
 STEP_RWD = -1.0
-N_TRIALS = 10
+N_TRIALS = 2
 GAMMA = .99
 EPS = 0.1
 
 def plot_returns(
-        idx: int,
         trial_returns: np.ndarray,
-        color: Tuple[float, float, float]) -> None:
+        color: Tuple[float, float, float],
+        label) -> None:
     avg_ret = np.average(trial_returns, axis=0)
-    plt.plot(avg_ret, color=color, label=f'Track: {str(idx)}')
+    plt.plot(avg_ret, color=color, label=label)
     
     stde_avg_ret = 1.96 * (np.std(avg_ret) / np.sqrt(N_TRIALS))
     y_neg = avg_ret - stde_avg_ret
@@ -42,8 +42,8 @@ def main():
         (0, 1, 0)
     ]
     t_colors = [
-        (0.5, 0, 0),
-        (0, 0.5, 0)
+        (0.75, 0, 0),
+        (0, 0.75, 0)
     ]
     styles = [
         'dashed',
@@ -66,9 +66,9 @@ def main():
                 EPS)
             b_trial_returns[t, :] = b_returns
             t_trial_returns[t, :] = t_returns
-
-        plot_returns(i, b_trial_returns, b_colors[i])
-        plot_returns(i, t_trial_returns, t_colors[i])
+        
+        plot_returns(b_trial_returns, b_colors[i], f'Track: {str(i)} - Behavior Policy')
+        plot_returns(t_trial_returns, t_colors[i], f'Track: {str(i)} - Target Policy')
 
     for t, track in enumerate(tracks):
         shortest_path = np.linalg.norm(track)
