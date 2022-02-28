@@ -9,12 +9,12 @@ from typing import Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
-from lib.monte_carlo.algorithms import off_policy_mc_control_epsilon_soft
+from lib.monte_carlo.algorithms import off_policy_mc_control
 from lib.monte_carlo.racetracks import Racetrack, track0, track1
 
-N_EPISODES = int(10**2)
+N_EPISODES = int(10**5)
 STEP_RWD = -1.0
-N_TRIALS = 2
+N_TRIALS = 10
 GAMMA = .99
 EPS = 0.1
 
@@ -59,7 +59,7 @@ def main():
         env = Racetrack(track)
         for t in range(N_TRIALS): 
             print(f'Trial: {t + 1} / {N_TRIALS}')
-            b_returns, t_returns = off_policy_mc_control_epsilon_soft(
+            b_returns, t_returns = off_policy_mc_control(
                 env,
                 N_EPISODES,
                 GAMMA,
@@ -79,6 +79,8 @@ def main():
             linestyle=styles[t],
             label=f'Upper Bound - Track {str(t)}')
 
+    plt.ylabel('Avg. Return')
+    plt.xlabel('Episode')
     plt.legend(loc='upper left')
     plt.show()
 

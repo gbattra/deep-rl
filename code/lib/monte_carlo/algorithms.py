@@ -78,7 +78,7 @@ def on_policy_mc_control_epsilon_soft(
 
 
 
-def off_policy_mc_control_epsilon_soft(
+def off_policy_mc_control(
     env: gym.Env, num_episodes: int, gamma: float, epsilon: float) -> np.ndarray:
     """On-policy Monte Carlo policy control for epsilon soft policies.
 
@@ -91,50 +91,39 @@ def off_policy_mc_control_epsilon_soft(
 
     """
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
-    N = defaultdict(lambda: np.zeros(env.action_space.n))
+    C = defaultdict(lambda: np.zeros(env.action_space.n))
 
-    b_policy = create_epsilon_policy(Q, epsilon)
     t_policy = create_epsilon_policy(Q, .0)
     b_returns = np.zeros(num_episodes)
     t_returns = np.zeros(num_episodes)
     
     for i in trange(num_episodes, desc="Episode", leave=False):
-        # TODO Q4
-        # For each episode calculate the return
-        # Update Q
-        # Note there is no need to update the policy here directly.
-        # By updating Q, the policy will automatically be updated.
+        b_policy = create_epsilon_policy(Q, epsilon)
         episode = generate_episode(env, b_policy)
-        G = 0
 
-        q = Q.copy()
-        n = N.copy()
-
+        G = 0.
+        W = 1.
         for t in range(len(episode) - 1, -1, -1):
             s, a, r = episode[t]
             G = (gamma * G) + r
+            C[s][a] += W
+            Q[s][a] = Q[s][a] + ((W / C[s][a]) * (G - Q[s][a]))
             
-            n[s][a] = N[s][a] + 1
-            q[s][a] = Q[s][a] + ((1. / float(n[s][a])) * (G - Q[s][a]))
+            p_pi = epsilon / float(env.action_space.n) if a != t_policy(s) else 1. - epsilon + (epsilon / float(env.action_space.n))
+            p_b = 1. - epsilon if a == t_policy(s) else epsilon
+            W = W * (p_pi / p_b)
+            if W == .0:
+                break
 
         b_returns[i] = G
-        for s in q:
-            N[s] = n[s]
-            Q[s] = q[s]
 
-    for i in trange(num_episodes, desc="Episode", leave=False):
-        # TODO Q4
-        # For each episode calculate the return
-        # Update Q
-        # Note there is no need to update the policy here directly.
-        # By updating Q, the policy will automatically be updated.
-        episode = generate_episode(env, t_policy)
-        G = 0
+        # do a rollout
+        t_episode = generate_episode(env, t_policy)
+        t_G = 0
 
-        for t in range(len(episode) - 1, -1, -1):
-            s, a, r = episode[t]
-            G = (gamma * G) + r
-
-        t_returns[i] = G
+        for e in range(len(t_episode) - 1, -1, -1):
+            _, _, t_r = t_episode[e]
+            t_G = (gamma * t_G) + t_r
+        t_returns[e] = t_G
 
     return b_returns, t_returns
