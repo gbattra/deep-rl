@@ -12,7 +12,7 @@ import numpy as np
 from lib.monte_carlo.algorithms import off_policy_mc_control
 from lib.monte_carlo.racetracks import Racetrack, track0, track1
 
-N_EPISODES = int(10**5)
+N_EPISODES = int(10**4)
 STEP_RWD = -1.0
 N_TRIALS = 10
 GAMMA = .99

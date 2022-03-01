@@ -94,11 +94,12 @@ def off_policy_mc_control(
     C = defaultdict(lambda: np.zeros(env.action_space.n))
 
     t_policy = create_epsilon_policy(Q, .0)
+    b_policy = create_epsilon_policy(Q, epsilon)
+
     b_returns = np.zeros(num_episodes)
     t_returns = np.zeros(num_episodes)
     
     for i in trange(num_episodes, desc="Episode", leave=False):
-        b_policy = create_epsilon_policy(Q, epsilon)
         episode = generate_episode(env, b_policy)
 
         G = 0.
@@ -118,12 +119,13 @@ def off_policy_mc_control(
         b_returns[i] = G
 
         # do a rollout
-        t_episode = generate_episode(env, t_policy)
-        t_G = 0
+        if i % 100 == 0:
+            t_episode = generate_episode(env, t_policy)
+            t_G = 0
 
-        for e in range(len(t_episode) - 1, -1, -1):
-            _, _, t_r = t_episode[e]
-            t_G = (gamma * t_G) + t_r
-        t_returns[e] = t_G
+            for e in range(len(t_episode) - 1, -1, -1):
+                _, _, t_r = t_episode[e]
+                t_G = (gamma * t_G) + t_r
+            t_returns[i:i*100] = t_G
 
     return b_returns, t_returns

@@ -99,7 +99,7 @@ class Racetrack(Env):
 	GOAL: int = 3
 	STEP_RWD: float = -1.
 
-	def __init__(self, track: np.ndarray, max_steps: int=450, psi: float=0.1) -> None:
+	def __init__(self, track: np.ndarray, max_steps: int=2000, psi: float=0.1) -> None:
 		super().__init__()
 		self.track = track
 		self.action_space = spaces.Discrete(len(RaceAction)**2)
