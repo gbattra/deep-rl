@@ -27,22 +27,34 @@ N_TRIALS = 10
 N_STEPS = 4
 
 
-def plot_returns(
-    returns: np.ndarray,
-    label: str,
-    color: Tuple[float, float, float]) -> None:
-    avg_ret = np.average(returns, axis=0)
-    plt.plot(avg_ret, color=color, label=label)
+def plot_returns(all_returns: np.ndarray) -> None:
+    for label, color, returns in all_returns:
+        avg_ret = np.average(returns, axis=0)
+        plt.plot(avg_ret, color=color, label=label)
+        
+        stde_avg_ret = 1.96 * (np.std(avg_ret) / np.sqrt(N_TRIALS))
+        y_neg = avg_ret - stde_avg_ret
+        y_pos = avg_ret + stde_avg_ret
+        plt.fill_between(
+            range(N_EPISODES),
+            y_neg,
+            y_pos,
+            alpha=0.2,
+            color=color)
     
-    stde_avg_ret = 1.96 * (np.std(avg_ret) / np.sqrt(N_TRIALS))
-    y_neg = avg_ret - stde_avg_ret
-    y_pos = avg_ret + stde_avg_ret
-    plt.fill_between(
-        range(N_EPISODES),
-        y_neg,
-        y_pos,
-        alpha=0.2,
-        color=color)
+    plt.ylabel('Avg. Return')
+    plt.xlabel('Episode')
+    plt.legend()
+    plt.show()
+
+def plot_episode_lengths(all_episode_lengths: np.ndarray) -> None:
+    for label, color, episode_lengths in all_episode_lengths:
+        avg_ret = np.average(episode_lengths, axis=0)
+        plt.plot(avg_ret, color=color, label=label)
+    plt.ylabel('Avg. Episode Length')
+    plt.xlabel('Episode')
+    plt.legend()
+    plt.show()
 
 
 def run_monte_carlo_control():
@@ -118,15 +130,17 @@ def main():
         ('n-Step SARSA', run_n_step_sarsa, (1., .0, 1.)),
         ('Q-Learning', run_q_learning, (.0, .0, .0))
     ]
+    algo_returns = []
+    algo_episode_lengths = []
     tranges = trange(len(algorithms), desc='Algorithm', leave=False)
     for a in tranges:
         label, algorithm, color = algorithms[a]
         tranges.set_description(f'Algorithm: {label}')
-        returns = algorithm()
-        plot_returns(returns, label, color)
-    
-    plt.legend()
-    plt.show()
+        returns, episode_lengths = algorithm()
+        algo_returns.append((label, color, returns))
+        algo_episode_lengths.append((label, color, episode_lengths))
+    plot_returns(algo_returns)
+    plot_episode_lengths(algo_episode_lengths)
 
 if __name__ == '__main__':
     main()

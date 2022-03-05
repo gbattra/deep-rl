@@ -22,7 +22,7 @@ class Action(IntEnum):
 class WindyGridworld(Env):
     GOAL = 1
 
-    def __init__(self, wind_grid: np.ndarray, max_t: int = 1000) -> None:
+    def __init__(self, wind_grid: np.ndarray, max_t: int = 5000) -> None:
         super().__init__()
         self.wind_grid = wind_grid
         self.pos = (0, 0)
@@ -105,15 +105,17 @@ def monte_carlo_windy_gridworld(
         gamma: float,
         eps: float) -> np.ndarray:
     trial_returns = np.zeros((n_trials, n_episodes))
+    trial_episode_lengths = np.zeros((n_trials, n_episodes))
     for t in trange(n_trials, desc='Trial', leave=False):
-        returns = on_policy_mc_control_epsilon_soft(
+        returns, episode_lengths = on_policy_mc_control_epsilon_soft(
             env,
             n_episodes,
             gamma,
             eps)
         trial_returns[t, :] = returns
+        trial_episode_lengths[t, :] = episode_lengths
     
-    return trial_returns
+    return trial_returns, trial_episode_lengths
 
 
 def sarsa_windy_gridworld(
@@ -124,16 +126,18 @@ def sarsa_windy_gridworld(
         eps: float,
         alpha: float) -> np.ndarray:
     trial_returns = np.zeros((n_trials, n_episodes))
+    trial_episode_lengths = np.zeros((n_trials, n_episodes))
     for t in trange(n_trials, desc='Trial', leave=False):
-        returns = sarsa(
+        returns, episode_lengths = sarsa(
             env,
             alpha,
             eps,
             gamma,
             n_episodes)
         trial_returns[t, :] = returns
+        trial_episode_lengths[t, :] = episode_lengths
     
-    return trial_returns
+    return trial_returns, trial_episode_lengths
 
 def expected_sarsa_windy_gridworld(
         env: WindyGridworld,
@@ -143,16 +147,18 @@ def expected_sarsa_windy_gridworld(
         eps: float,
         alpha: float) -> np.ndarray:
     trial_returns = np.zeros((n_trials, n_episodes))
+    trial_episode_lengths = np.zeros((n_trials, n_episodes))
     for t in trange(n_trials, desc='Trial', leave=False):
-        returns = expected_sarsa(
+        returns, episode_lengths = expected_sarsa(
             env,
             alpha,
             eps,
             gamma,
             n_episodes)
         trial_returns[t, :] = returns
+        trial_episode_lengths[t, :] = episode_lengths
     
-    return trial_returns
+    return trial_returns, trial_episode_lengths
 
 
 def n_step_sarsa_windy_gridworld(
@@ -164,8 +170,9 @@ def n_step_sarsa_windy_gridworld(
         eps: float,
         alpha: float) -> np.ndarray:
     trial_returns = np.zeros((n_trials, n_episodes))
+    trial_episode_lengths = np.zeros((n_trials, n_episodes))
     for t in trange(n_trials, desc='Trial', leave=False):
-        returns = n_step_sarsa(
+        returns, episode_lengths = n_step_sarsa(
             env,
             n_steps,
             alpha,
@@ -173,8 +180,9 @@ def n_step_sarsa_windy_gridworld(
             gamma,
             n_episodes)
         trial_returns[t, :] = returns
+        trial_episode_lengths[t, :] = episode_lengths
     
-    return trial_returns
+    return trial_returns, trial_episode_lengths
 
 def q_learning_windy_gridworld(
         env: WindyGridworld,
@@ -184,13 +192,15 @@ def q_learning_windy_gridworld(
         eps: float,
         alpha: float) -> np.ndarray:
     trial_returns = np.zeros((n_trials, n_episodes))
+    trial_episode_lengths = np.zeros((n_trials, n_episodes))
     for t in trange(n_trials, desc='Trial', leave=False):
-        returns = q_learning(
+        returns, episode_lengths = q_learning(
             env,
             alpha,
             eps,
             gamma,
             n_episodes)
         trial_returns[t, :] = returns
+        trial_episode_lengths[t, :] = episode_lengths
     
-    return trial_returns
+    return trial_returns, trial_episode_lengths

@@ -26,10 +26,12 @@ def sarsa(
 
     policy = create_epsilon_policy(Q, epsilon)
     returns = np.zeros(n_episodes)
+    episode_lengths = np.zeros(n_episodes)
     for e in trange(n_episodes, desc='Epsiode', leave=False):
         s = env.reset()
         a = policy(s)
         G = 0
+        i = 0
         done = False
         while not done:
             s_prime, r, done, _ = env.step(a)
@@ -38,8 +40,10 @@ def sarsa(
             Q[s][a] = Q[s][a] + (alpha * (r + (gamma * Q[s_prime][a_prime]) - Q[s][a]))
             s = s_prime
             a = a_prime
+            i += 1
         returns[e] = G
-    return returns
+        episode_lengths[e] = i
+    return returns, episode_lengths
 
 
 def expected_sarsa(env: Env,
@@ -50,11 +54,13 @@ def expected_sarsa(env: Env,
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
     policy = create_epsilon_policy(Q, epsilon)
     returns = np.zeros(n_episodes)
+    episode_lengths = np.zeros(n_episodes)
     for e in trange(n_episodes, desc='Epsiode', leave=False):
         s = env.reset()
         a = policy(s)
         G = 0
         done = False
+        i = 0
         while not done:
             s_prime, r, done, _ = env.step(a)
             G = (gamma * G) + r
@@ -64,8 +70,10 @@ def expected_sarsa(env: Env,
             Q[s][a] = Q[s][a] + (alpha * (r + (gamma * expected_rwd) - Q[s][a]))
             s = s_prime
             a = a_prime
+            i += 1
         returns[e] = G
-    return returns
+        episode_lengths[e] = i
+    return returns, episode_lengths
 
 
 def n_step_sarsa(
@@ -78,6 +86,7 @@ def n_step_sarsa(
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
     policy = create_epsilon_policy(Q, epsilon)
     returns = np.zeros(n_episodes)
+    episode_lengths = np.zeros(n_episodes)
 
     def compute_gain(
             tau: int,
@@ -118,7 +127,8 @@ def n_step_sarsa(
                 Q[s_tau][a_tau] = Q[s_tau][a_tau] + (alpha * (G - Q[s_tau][a_tau]))
             t += 1
         returns[e] = ep_G
-    return returns
+        episode_lengths[e] = t
+    return returns, episode_lengths
 
 
 def q_learning(
@@ -131,10 +141,12 @@ def q_learning(
     b_policy = create_epsilon_policy(Q, epsilon)
     t_policy = create_epsilon_policy(Q, .0)
     returns = np.zeros(n_episodes)
+    episode_lengths = np.zeros(n_episodes)
 
     for e in trange(n_episodes, desc='Epsiode', leave=False):
         s = env.reset()
         G = 0
+        i = 0
         done = False
         while not done:
             a = b_policy(s)
@@ -143,5 +155,7 @@ def q_learning(
             a_prime = t_policy(s_prime)
             Q[s][a] = Q[s][a] + (alpha * (r + (gamma * Q[s_prime][a_prime]) - Q[s][a]))
             s = s_prime
+            i += 1
         returns[e] = G
-    return returns
+        episode_lengths[e] = i
+    return returns, episode_lengths

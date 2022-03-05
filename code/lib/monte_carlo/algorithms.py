@@ -50,6 +50,7 @@ def on_policy_mc_control_epsilon_soft(
 
     policy = create_epsilon_policy(Q, .5)
     returns = np.zeros(num_episodes)
+    episode_lengths = np.zeros(num_episodes)
     
     for i in trange(num_episodes, desc="Episode", leave=False):
         episode = generate_episode(env, policy)
@@ -63,7 +64,8 @@ def on_policy_mc_control_epsilon_soft(
             Q[s][a] = Q[s][a] + ((1. / N[s][a]) * (G - Q[s][a]))
 
         returns[i] = G
-    return returns
+        episode_lengths[i] = len(episode)
+    return returns, episode_lengths
 
 
 
