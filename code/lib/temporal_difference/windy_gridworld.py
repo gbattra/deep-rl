@@ -11,7 +11,7 @@ from gym import Env, spaces
 import numpy as np
 from tqdm import trange
 from lib.monte_carlo.algorithms import on_policy_mc_control_epsilon_soft
-from lib.temporal_difference.algorithms import sarsa
+from lib.temporal_difference.algorithms import expected_sarsa, sarsa
 
 class Action(IntEnum):
     UP = 0
@@ -119,6 +119,25 @@ def sarsa_windy_gridworld(
     trial_returns = np.zeros((n_trials, n_episodes))
     for t in trange(n_trials, desc='Trial'):
         returns = sarsa(
+            env,
+            alpha,
+            eps,
+            gamma,
+            n_episodes)
+        trial_returns[t, :] = returns
+    
+    return trial_returns
+
+def expected_sarsa_windy_gridworld(
+    env: WindyGridworld,
+    n_trials: int,
+    n_episodes: int,
+    gamma: float,
+    eps: float,
+    alpha: float) -> np.ndarray:
+    trial_returns = np.zeros((n_trials, n_episodes))
+    for t in trange(n_trials, desc='Trial'):
+        returns = expected_sarsa(
             env,
             alpha,
             eps,

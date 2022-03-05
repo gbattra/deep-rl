@@ -18,7 +18,7 @@ from lib.temporal_difference.windy_gridworld import (
 ALPHA = 0.5
 GAMMA = 1.
 EPS = .1
-N_EPISODES = int(10**4)
+N_EPISODES = int(10**3)
 N_TRIALS = 10
 
 
@@ -63,11 +63,25 @@ def run_sarsa() -> np.ndarray:
         ALPHA)
     return sarsa_returns
 
+
+def run_expected_sarsa() -> np.ndarray:
+    wind_grid = windy_gridworld_1()
+    env = WindyGridworld(wind_grid)
+    expected_sarsa_returns = sarsa_windy_gridworld(
+        env,
+        N_TRIALS,
+        N_EPISODES,
+        GAMMA,
+        EPS,
+        ALPHA)
+    return expected_sarsa_returns
+
 def main():
     # mc_returns = run_monte_carlo_control()
     # plot_returns(mc_returns, 'Monte Carlo', (1., .0, .0))
-    sarsa_returns = run_sarsa()
-    plot_returns(sarsa_returns, 'SARSA', (1., .0, .0))
+    # sarsa_returns = run_sarsa()
+    expected_sarsa_returns = run_expected_sarsa()
+    plot_returns(expected_sarsa_returns, 'Expected SARSA', (1., .0, .0))
     
     plt.legend()
     plt.show()

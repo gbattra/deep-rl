@@ -37,3 +37,13 @@ def create_epsilon_policy(Q: defaultdict, epsilon: float) -> Callable:
         return action
 
     return get_action
+
+
+def policy_probability_e_greedy(
+        actions: np.ndarray,
+        epsilon: float) -> np.ndarray:
+    action_probs = np.ones(actions.shape)
+    max_idx = np.argmax(actions)
+    action_probs *= epsilon
+    action_probs[max_idx] = 1. - epsilon
+    return action_probs
