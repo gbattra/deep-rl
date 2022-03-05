@@ -5,16 +5,13 @@
 Implementation of the windy gridworld domain
 '''
 
-from email.policy import default
 from enum import IntEnum
 from typing import Any, Dict, Tuple
 from gym import Env, spaces
 import numpy as np
-import matplotlib.pyplot as plt
 from tqdm import trange
 from lib.monte_carlo.algorithms import on_policy_mc_control_epsilon_soft
-from lib.monte_carlo.policy import create_epsilon_policy
-
+from lib.temporal_difference.algorithms import sarsa
 
 class Action(IntEnum):
     UP = 0
@@ -23,7 +20,7 @@ class Action(IntEnum):
     LEFT = 3
 
 class WindyGridworld(Env):
-    GOAL = -1
+    GOAL = 1
 
     def __init__(self, wind_grid: np.ndarray) -> None:
         super().__init__()
@@ -99,7 +96,7 @@ def monte_carlo_windy_gridworld(
     n_trials: int,
     n_episodes: int,
     gamma: float,
-    eps: float):
+    eps: float) -> np.ndarray:
     trial_returns = np.zeros((n_trials, n_episodes))
     for t in trange(n_trials, desc='Trial'):
         returns = on_policy_mc_control_epsilon_soft(
@@ -107,6 +104,26 @@ def monte_carlo_windy_gridworld(
             n_episodes,
             gamma,
             eps)
+        trial_returns[t, :] = returns
+    
+    return trial_returns
+
+
+def sarsa_windy_gridworld(
+    env: WindyGridworld,
+    n_trials: int,
+    n_episodes: int,
+    gamma: float,
+    eps: float,
+    alpha: float) -> np.ndarray:
+    trial_returns = np.zeros((n_trials, n_episodes))
+    for t in trange(n_trials, desc='Trial'):
+        returns = sarsa(
+            env,
+            alpha,
+            eps,
+            gamma,
+            n_episodes)
         trial_returns[t, :] = returns
     
     return trial_returns

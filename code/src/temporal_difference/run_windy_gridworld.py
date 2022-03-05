@@ -10,12 +10,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from lib.temporal_difference.windy_gridworld import (
-    windy_gridworld_1, WindyGridworld, monte_carlo_windy_gridworld
-)
+    windy_gridworld_1,
+    WindyGridworld,
+    monte_carlo_windy_gridworld,
+    sarsa_windy_gridworld)
 
-
+ALPHA = 0.5
 GAMMA = 1.
-EPS = 0.1
+EPS = .1
 N_EPISODES = int(10**4)
 N_TRIALS = 10
 
@@ -37,7 +39,7 @@ def plot_returns(
         alpha=0.2,
         color=color)
 
-def main():
+def run_monte_carlo_control():
     wind_grid = windy_gridworld_1()
     env = WindyGridworld(wind_grid)
     mc_returns = monte_carlo_windy_gridworld(
@@ -46,8 +48,27 @@ def main():
         N_EPISODES,
         GAMMA,
         EPS)
+    return mc_returns
 
-    plot_returns(mc_returns, 'Monte Carlo', (1., .0, .0))
+
+def run_sarsa() -> np.ndarray:
+    wind_grid = windy_gridworld_1()
+    env = WindyGridworld(wind_grid)
+    sarsa_returns = sarsa_windy_gridworld(
+        env,
+        N_TRIALS,
+        N_EPISODES,
+        GAMMA,
+        EPS,
+        ALPHA)
+    return sarsa_returns
+
+def main():
+    # mc_returns = run_monte_carlo_control()
+    # plot_returns(mc_returns, 'Monte Carlo', (1., .0, .0))
+    sarsa_returns = run_sarsa()
+    plot_returns(sarsa_returns, 'SARSA', (1., .0, .0))
+    
     plt.legend()
     plt.show()
 

@@ -52,11 +52,6 @@ def on_policy_mc_control_epsilon_soft(
     returns = np.zeros(num_episodes)
     
     for i in trange(num_episodes, desc="Episode", leave=False):
-        # TODO Q4
-        # For each episode calculate the return
-        # Update Q
-        # Note there is no need to update the policy here directly.
-        # By updating Q, the policy will automatically be updated.
         episode = generate_episode(env, policy)
         G = 0
 
