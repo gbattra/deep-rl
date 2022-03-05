@@ -8,13 +8,15 @@ Executable for running MC and TD algorithms on Windy Gridworld
 from typing import Tuple
 import numpy as np
 import matplotlib.pyplot as plt
+from lib.temporal_difference.algorithms import q_learning
 
 from lib.temporal_difference.windy_gridworld import (
     n_step_sarsa_windy_gridworld,
     windy_gridworld_1,
     WindyGridworld,
     monte_carlo_windy_gridworld,
-    sarsa_windy_gridworld)
+    sarsa_windy_gridworld,
+    q_learning_windy_gridworld)
 
 ALPHA = .5
 GAMMA = 1.
@@ -41,48 +43,49 @@ def plot_returns(
         alpha=0.2,
         color=color)
 
+
 def run_monte_carlo_control():
     wind_grid = windy_gridworld_1()
     env = WindyGridworld(wind_grid)
-    mc_returns = monte_carlo_windy_gridworld(
+    returns = monte_carlo_windy_gridworld(
         env,
         N_TRIALS,
         N_EPISODES,
         GAMMA,
         EPS)
-    return mc_returns
+    return returns
 
 
 def run_sarsa() -> np.ndarray:
     wind_grid = windy_gridworld_1()
     env = WindyGridworld(wind_grid)
-    sarsa_returns = sarsa_windy_gridworld(
+    returns = sarsa_windy_gridworld(
         env,
         N_TRIALS,
         N_EPISODES,
         GAMMA,
         EPS,
         ALPHA)
-    return sarsa_returns
+    return returns
 
 
 def run_expected_sarsa() -> np.ndarray:
     wind_grid = windy_gridworld_1()
     env = WindyGridworld(wind_grid)
-    expected_sarsa_returns = sarsa_windy_gridworld(
+    returns = sarsa_windy_gridworld(
         env,
         N_TRIALS,
         N_EPISODES,
         GAMMA,
         EPS,
         ALPHA)
-    return expected_sarsa_returns
+    return returns
 
 
 def run_n_step_sarsa() -> np.ndarray:
     wind_grid = windy_gridworld_1()
     env = WindyGridworld(wind_grid)
-    n_step_sarsa_returns = n_step_sarsa_windy_gridworld(
+    returns = n_step_sarsa_windy_gridworld(
         env,
         N_STEPS,
         N_TRIALS,
@@ -90,15 +93,30 @@ def run_n_step_sarsa() -> np.ndarray:
         GAMMA,
         EPS,
         ALPHA)
-    return n_step_sarsa_returns
+    return returns
+
+
+def run_q_learning() -> np.ndarray:
+    wind_grid = windy_gridworld_1()
+    env = WindyGridworld(wind_grid)
+    returns = q_learning_windy_gridworld(
+        env,
+        N_TRIALS,
+        N_EPISODES,
+        GAMMA,
+        EPS,
+        ALPHA)
+    return returns
+
 
 def main():
     # mc_returns = run_monte_carlo_control()
     # plot_returns(mc_returns, 'Monte Carlo', (1., .0, .0))
     # sarsa_returns = run_sarsa()
     # expected_sarsa_returns = run_expected_sarsa()
-    n_step_sarsa_returns = run_n_step_sarsa()
-    plot_returns(n_step_sarsa_returns, 'n-Step SARSA', (1., .0, .0))
+    # returns = run_n_step_sarsa()
+    returns = run_q_learning()
+    plot_returns(returns, 'Q-Learning', (1., .0, .0))
     
     plt.legend()
     plt.show()

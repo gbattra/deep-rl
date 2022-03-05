@@ -68,25 +68,6 @@ def expected_sarsa(env: Env,
     return returns
 
 
-def compute_gain(
-        Q: Dict[str, np.ndarray],
-        n_steps: int,
-        T: int,
-        gamma: float,
-        tau: int,
-        obs: List[Tuple[Tuple[int, int], int, float, bool]]) \
-        -> float:
-    I = min(tau + n_steps, T)
-    G = 0
-    for i in range(tau + 1, I):
-        _, _, r_t = obs[i]
-        G += (gamma ** (i - tau - 1)) * r_t
-    if tau + n_steps < T:
-        s_t, a_t, _ = obs[tau + n_steps - 1]
-        G += (gamma ** n_steps) * Q[s_t][a_t]
-    return G
-
-
 def n_step_sarsa(
         env: Env,
         n_steps: int,
@@ -97,6 +78,20 @@ def n_step_sarsa(
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
     policy = create_epsilon_policy(Q, epsilon)
     returns = np.zeros(n_episodes)
+
+    def compute_gain(
+            tau: int,
+            obs: List[Tuple[Tuple[int, int], int, float, bool]]) \
+            -> float:
+        I = min(tau + n_steps, T)
+        G = 0
+        for i in range(tau + 1, I):
+            _, _, r_t = obs[i]
+            G += (gamma ** (i - tau - 1)) * r_t
+        if tau + n_steps < T:
+            s_t, a_t, _ = obs[tau + n_steps - 1]
+            G += (gamma ** n_steps) * Q[s_t][a_t]
+        return G
 
     for e in trange(n_episodes, desc='Epsiode', leave=False):
         s = env.reset()
@@ -118,9 +113,35 @@ def n_step_sarsa(
                     s = s_prime
             tau = t - n_steps + 1
             if tau >= 0:
-                G = compute_gain(Q, n_steps, T, gamma, tau, obs)
+                G = compute_gain(tau, obs)
                 s_tau, a_tau, _ = obs[tau]
-                Q[s_tau][a_tau] += alpha * (G - Q[s_tau][a_tau])
+                Q[s_tau][a_tau] = Q[s_tau][a_tau] + (alpha * (G - Q[s_tau][a_tau]))
             t += 1
         returns[e] = ep_G
+    return returns
+
+
+def q_learning(
+        env: Env,
+        alpha: float,
+        epsilon: float,
+        gamma: float,
+        n_episodes: int) -> np.ndarray:
+    Q = defaultdict(lambda: np.zeros(env.action_space.n))
+    b_policy = create_epsilon_policy(Q, epsilon)
+    t_policy = create_epsilon_policy(Q, .0)
+    returns = np.zeros(n_episodes)
+
+    for e in trange(n_episodes, desc='Epsiode', leave=False):
+        s = env.reset()
+        G = 0
+        done = False
+        while not done:
+            a = b_policy(s)
+            s_prime, r, done, _ = env.step(a)
+            G = (gamma * G) + r
+            a_prime = t_policy(s_prime)
+            Q[s][a] = Q[s][a] + (alpha * (r + (gamma * Q[s_prime][a_prime]) - Q[s][a]))
+            s = s_prime
+        returns[e] = G
     return returns
