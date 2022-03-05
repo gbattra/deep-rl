@@ -1,0 +1,55 @@
+# Greg Attra
+# 02/24/2022
+
+'''
+Executable for running MC and TD algorithms on Windy Gridworld
+'''
+
+from typing import Tuple
+import numpy as np
+import matplotlib.pyplot as plt
+
+from lib.temporal_difference.windy_gridworld import (
+    windy_gridworld_1, WindyGridworld, monte_carlo_windy_gridworld
+)
+
+
+GAMMA = 1.
+EPS = 0.1
+N_EPISODES = int(10**4)
+N_TRIALS = 10
+
+
+def plot_returns(
+    returns: np.ndarray,
+    label: str,
+    color: Tuple[float, float, float]) -> None:
+    avg_ret = np.average(returns, axis=0)
+    plt.plot(avg_ret, color=color, label=label)
+    
+    stde_avg_ret = 1.96 * (np.std(avg_ret) / np.sqrt(N_TRIALS))
+    y_neg = avg_ret - stde_avg_ret
+    y_pos = avg_ret + stde_avg_ret
+    plt.fill_between(
+        range(N_EPISODES),
+        y_neg,
+        y_pos,
+        alpha=0.2,
+        color=color)
+
+def main():
+    wind_grid = windy_gridworld_1()
+    env = WindyGridworld(wind_grid)
+    mc_returns = monte_carlo_windy_gridworld(
+        env,
+        N_TRIALS,
+        N_EPISODES,
+        GAMMA,
+        EPS)
+
+    plot_returns(mc_returns, 'Monte Carlo', (1., .0, .0))
+    plt.legend()
+    plt.show()
+
+if __name__ == '__main__':
+    main()
