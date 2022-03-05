@@ -22,10 +22,12 @@ class Action(IntEnum):
 class WindyGridworld(Env):
     GOAL = 1
 
-    def __init__(self, wind_grid: np.ndarray) -> None:
+    def __init__(self, wind_grid: np.ndarray, max_t: int = 1000) -> None:
         super().__init__()
         self.wind_grid = wind_grid
         self.pos = (0, 0)
+        self.t = 0
+        self.max_t = max_t
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Tuple([
             spaces.Discrete(self.wind_grid.shape[0]),
@@ -67,17 +69,23 @@ class WindyGridworld(Env):
 
     def reset(self) -> Tuple[int, int]:
         self.pos = (self.wind_grid.shape[0] // 2, 0)
+        self.t = 0
         return self.pos
 
     def step(self, action: int) -> Tuple[Tuple[int, int], float, bool, Dict[str, Any]]:
         pos = self.take_action(self.pos, action)
         pos = self.apply_wind(pos)
         self.pos = pos
+
         rwd = -1.
         done = False
         if self.wind_grid[pos] == self.GOAL:
             rwd = .0
             done = True
+        if self.t >= self.max_t:
+            done = True
+
+        self.t += 1
 
         return (pos, rwd, done, {})
 
@@ -87,7 +95,6 @@ def windy_gridworld_1() -> np.ndarray:
     world[:, 3:9] = -1
     world[:, 6:8] = -2
     world[3, 7] = WindyGridworld.GOAL
-    print(world)
     return world
 
 
@@ -98,7 +105,7 @@ def monte_carlo_windy_gridworld(
         gamma: float,
         eps: float) -> np.ndarray:
     trial_returns = np.zeros((n_trials, n_episodes))
-    for t in trange(n_trials, desc='Trial'):
+    for t in trange(n_trials, desc='Trial', leave=False):
         returns = on_policy_mc_control_epsilon_soft(
             env,
             n_episodes,
@@ -117,7 +124,7 @@ def sarsa_windy_gridworld(
         eps: float,
         alpha: float) -> np.ndarray:
     trial_returns = np.zeros((n_trials, n_episodes))
-    for t in trange(n_trials, desc='Trial'):
+    for t in trange(n_trials, desc='Trial', leave=False):
         returns = sarsa(
             env,
             alpha,
@@ -136,7 +143,7 @@ def expected_sarsa_windy_gridworld(
         eps: float,
         alpha: float) -> np.ndarray:
     trial_returns = np.zeros((n_trials, n_episodes))
-    for t in trange(n_trials, desc='Trial'):
+    for t in trange(n_trials, desc='Trial', leave=False):
         returns = expected_sarsa(
             env,
             alpha,
@@ -157,7 +164,7 @@ def n_step_sarsa_windy_gridworld(
         eps: float,
         alpha: float) -> np.ndarray:
     trial_returns = np.zeros((n_trials, n_episodes))
-    for t in trange(n_trials, desc='Trial'):
+    for t in trange(n_trials, desc='Trial', leave=False):
         returns = n_step_sarsa(
             env,
             n_steps,
@@ -177,7 +184,7 @@ def q_learning_windy_gridworld(
         eps: float,
         alpha: float) -> np.ndarray:
     trial_returns = np.zeros((n_trials, n_episodes))
-    for t in trange(n_trials, desc='Trial'):
+    for t in trange(n_trials, desc='Trial', leave=False):
         returns = q_learning(
             env,
             alpha,

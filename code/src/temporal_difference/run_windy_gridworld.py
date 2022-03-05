@@ -8,6 +8,7 @@ Executable for running MC and TD algorithms on Windy Gridworld
 from typing import Tuple
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import trange
 from lib.temporal_difference.algorithms import q_learning
 
 from lib.temporal_difference.windy_gridworld import (
@@ -110,13 +111,19 @@ def run_q_learning() -> np.ndarray:
 
 
 def main():
-    # mc_returns = run_monte_carlo_control()
-    # plot_returns(mc_returns, 'Monte Carlo', (1., .0, .0))
-    # sarsa_returns = run_sarsa()
-    # expected_sarsa_returns = run_expected_sarsa()
-    # returns = run_n_step_sarsa()
-    returns = run_q_learning()
-    plot_returns(returns, 'Q-Learning', (1., .0, .0))
+    algorithms = [
+        ('Monte Carlo', run_monte_carlo_control, (1., .0, .0)),
+        ('SARSA', run_sarsa, (.0, 1., .0)),
+        ('Expected SARSA', run_expected_sarsa, (.0, .0, 1.)),
+        ('n-Step SARSA', run_n_step_sarsa, (1., .0, 1.)),
+        ('Q-Learning', run_q_learning, (.0, .0, .0))
+    ]
+    tranges = trange(len(algorithms), desc='Algorithm', leave=False)
+    for a in tranges:
+        label, algorithm, color = algorithms[a]
+        tranges.set_description(f'Algorithm: {label}')
+        returns = algorithm()
+        plot_returns(returns, label, color)
     
     plt.legend()
     plt.show()

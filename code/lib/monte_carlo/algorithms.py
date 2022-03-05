@@ -48,27 +48,21 @@ def on_policy_mc_control_epsilon_soft(
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
     N = defaultdict(lambda: np.zeros(env.action_space.n))
 
-    policy = create_epsilon_policy(Q, epsilon)
+    policy = create_epsilon_policy(Q, .5)
     returns = np.zeros(num_episodes)
     
     for i in trange(num_episodes, desc="Episode", leave=False):
         episode = generate_episode(env, policy)
         G = 0
 
-        q = Q.copy()
-        n = N.copy()
-
         for t in range(len(episode) - 1, -1, -1):
             s, a, r = episode[t]
             G = (gamma * G) + r
             
-            n[s][a] = N[s][a] + 1
-            q[s][a] = Q[s][a] + ((1. / float(n[s][a])) * (G - Q[s][a]))
+            N[s][a] = N[s][a] + 1
+            Q[s][a] = Q[s][a] + ((1. / N[s][a]) * (G - Q[s][a]))
 
         returns[i] = G
-        for s in q:
-            N[s] = n[s]
-            Q[s] = q[s]
     return returns
 
 
