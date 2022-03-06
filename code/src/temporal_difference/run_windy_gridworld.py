@@ -8,8 +8,9 @@ Executable for running MC and TD algorithms on Windy Gridworld
 from typing import Tuple
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 from tqdm import trange
-from lib.temporal_difference.algorithms import q_learning
+
 
 from lib.temporal_difference.windy_gridworld import (
     n_step_sarsa_windy_gridworld,
@@ -27,7 +28,7 @@ N_TRIALS = 10
 N_STEPS = 4
 
 
-def plot_returns(all_returns: np.ndarray) -> None:
+def plot_returns(all_returns: np.ndarray, title: str) -> None:
     for label, color, returns in all_returns:
         avg_ret = np.average(returns, axis=0)
         plt.plot(avg_ret, color=color, label=label)
@@ -44,61 +45,55 @@ def plot_returns(all_returns: np.ndarray) -> None:
     
     plt.ylabel('Avg. Return')
     plt.xlabel('Episode')
+    plt.title(title)
     plt.legend()
     plt.show()
 
-def plot_episode_lengths(all_episode_lengths: np.ndarray) -> None:
+def plot_episode_lengths(all_episode_lengths: np.ndarray, title: str) -> None:
     for label, color, episode_lengths in all_episode_lengths:
         avg_ret = np.average(episode_lengths, axis=0)
         plt.plot(avg_ret, color=color, label=label)
     plt.ylabel('Avg. Episode Length')
     plt.xlabel('Episode')
+    plt.title(title)
     plt.legend()
     plt.show()
 
 
-def run_monte_carlo_control():
-    wind_grid = windy_gridworld_1()
-    env = WindyGridworld(wind_grid)
-    returns = monte_carlo_windy_gridworld(
+def run_monte_carlo_control(env: WindyGridworld):
+    returns, episode_lengths = monte_carlo_windy_gridworld(
         env,
         N_TRIALS,
         N_EPISODES,
         GAMMA,
         EPS)
-    return returns
+    return returns, episode_lengths
 
 
-def run_sarsa() -> np.ndarray:
-    wind_grid = windy_gridworld_1()
-    env = WindyGridworld(wind_grid)
-    returns = sarsa_windy_gridworld(
+def run_sarsa(env: WindyGridworld) -> Tuple[np.ndarray, np.ndarray]:
+    returns, episode_lengths = sarsa_windy_gridworld(
         env,
         N_TRIALS,
         N_EPISODES,
         GAMMA,
         EPS,
         ALPHA)
-    return returns
+    return returns, episode_lengths
 
 
-def run_expected_sarsa() -> np.ndarray:
-    wind_grid = windy_gridworld_1()
-    env = WindyGridworld(wind_grid)
-    returns = sarsa_windy_gridworld(
+def run_expected_sarsa(env: WindyGridworld) -> Tuple[np.ndarray, np.ndarray]:
+    returns, episode_lengths = sarsa_windy_gridworld(
         env,
         N_TRIALS,
         N_EPISODES,
         GAMMA,
         EPS,
         ALPHA)
-    return returns
+    return returns, episode_lengths
 
 
-def run_n_step_sarsa() -> np.ndarray:
-    wind_grid = windy_gridworld_1()
-    env = WindyGridworld(wind_grid)
-    returns = n_step_sarsa_windy_gridworld(
+def run_n_step_sarsa(env: WindyGridworld) -> Tuple[np.ndarray, np.ndarray]:
+    returns, episode_lengths = n_step_sarsa_windy_gridworld(
         env,
         N_STEPS,
         N_TRIALS,
@@ -106,23 +101,21 @@ def run_n_step_sarsa() -> np.ndarray:
         GAMMA,
         EPS,
         ALPHA)
-    return returns
+    return returns, episode_lengths
 
 
-def run_q_learning() -> np.ndarray:
-    wind_grid = windy_gridworld_1()
-    env = WindyGridworld(wind_grid)
-    returns = q_learning_windy_gridworld(
+def run_q_learning(env: WindyGridworld) -> Tuple[np.ndarray, np.ndarray]:
+    returns, episode_lengths = q_learning_windy_gridworld(
         env,
         N_TRIALS,
         N_EPISODES,
         GAMMA,
         EPS,
         ALPHA)
-    return returns
+    return returns, episode_lengths
 
 
-def main():
+def run_experiment(env: WindyGridworld) -> Tuple[np.ndarray, np.ndarray]:
     algorithms = [
         ('Monte Carlo', run_monte_carlo_control, (1., .0, .0)),
         ('SARSA', run_sarsa, (.0, 1., .0)),
@@ -136,11 +129,55 @@ def main():
     for a in tranges:
         label, algorithm, color = algorithms[a]
         tranges.set_description(f'Algorithm: {label}')
-        returns, episode_lengths = algorithm()
+        returns, episode_lengths = algorithm(env)
         algo_returns.append((label, color, returns))
         algo_episode_lengths.append((label, color, episode_lengths))
-    plot_returns(algo_returns)
-    plot_episode_lengths(algo_episode_lengths)
+    return algo_returns, algo_episode_lengths
+
+
+def main():
+    parser = argparse.ArgumentParser('Run a bandit testsuite')
+    parser.add_argument(
+        '--king-moves', help='Enable king moves', action='store_true')
+    parser.add_argument(
+        '--noop-action', help='Enable noop action', action='store_true')
+    parser.add_argument(
+        '--run-all', help='Run all experiments', action='store_true')
+    parser.add_argument(
+        '--max-t', help='Max episode timesteps', type=int, default=5000)
+    args = parser.parse_args()
+
+    if args.run_all:
+        experiments = [
+            (False, False, 5000),
+            (True, False, 5000),
+            (True, True, 5000),
+        ]
+
+        all_returns = []
+        all_episode_lengths = []
+        experiment_titles = []
+        for king_moves, noop_action, max_t in experiments:
+            wind_grid = windy_gridworld_1()
+            env = WindyGridworld(wind_grid, king_moves, noop_action, max_t)
+            experiment_titles.append(env.to_string())
+            algo_returns, algo_episode_lengths = run_experiment(env)
+            all_returns.append(algo_returns)
+            all_episode_lengths.append(algo_episode_lengths)
+        
+        for returns, episode_lengths, title in zip(all_returns, all_episode_lengths, experiment_titles):
+            plot_returns(returns, title)
+            plot_episode_lengths(episode_lengths, title)
+        
+        exit()
+    else:
+        wind_grid = windy_gridworld_1()
+        env = WindyGridworld(wind_grid, args.king_moves, args.noop_action, args.max_t)
+        algo_returns, algo_episode_lengths = run_experiment(env)
+        plot_returns(returns, env.to_string())
+        plot_episode_lengths(episode_lengths, env.to_string())
+        exit()
+
 
 if __name__ == '__main__':
     main()

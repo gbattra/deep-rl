@@ -13,33 +13,59 @@ from tqdm import trange
 from lib.monte_carlo.algorithms import on_policy_mc_control_epsilon_soft
 from lib.temporal_difference.algorithms import expected_sarsa, n_step_sarsa, q_learning, sarsa
 
-class Action(IntEnum):
+
+class GridworldAction(IntEnum):
     UP = 0
     RIGHT = 1
     DOWN = 2
     LEFT = 3
+    UP_RIGHT = 4
+    UP_LEFT = 5
+    DOWN_RIGHT = 6
+    DOWN_LEFT = 7
+    NOOP = 8
+
 
 class WindyGridworld(Env):
     GOAL = 1
 
-    def __init__(self, wind_grid: np.ndarray, max_t: int = 5000) -> None:
+    def __init__(
+            self,
+            wind_grid: np.ndarray,
+            king_moves: bool = False,
+            noop_action: bool = False,
+            max_t: int = 5000) -> None:
         super().__init__()
         self.wind_grid = wind_grid
         self.pos = (0, 0)
         self.t = 0
         self.max_t = max_t
-        self.action_space = spaces.Discrete(4)
+        self.king_moves = king_moves
+        self.noop_action = noop_action
+        self.action_space = spaces.Discrete(4 + (5 if king_moves and noop_action else (4 if king_moves else 0)))
         self.observation_space = spaces.Tuple([
             spaces.Discrete(self.wind_grid.shape[0]),
             spaces.Discrete(self.wind_grid.shape[1])
         ])
+        print(self.to_string())
 
-    def action_to_dydx(self, action: Action) -> Tuple[int, int]:
+    def to_string(self) -> str:
+        return f'Windy Gridworld - ' \
+            + f'Action Space: {self.action_space.n} - ' \
+            + f'King Moves: {str(self.king_moves)} - ' \
+            + f'Noop Action: {str(self.noop_action)}'
+
+    def action_to_dydx(self, action: GridworldAction) -> Tuple[int, int]:
         action_map = {
-            Action.UP: (-1, 0),
-            Action.RIGHT: (0, 1),
-            Action.DOWN: (1, 0),
-            Action.LEFT: (0, -1)
+            GridworldAction.UP: (-1, 0),
+            GridworldAction.RIGHT: (0, 1),
+            GridworldAction.DOWN: (1, 0),
+            GridworldAction.LEFT: (0, -1),
+            GridworldAction.UP_RIGHT: (-1, 1),
+            GridworldAction.UP_LEFT: (-1, -1),
+            GridworldAction.DOWN_RIGHT: (1, 1),
+            GridworldAction.DOWN_LEFT: (1, -1),
+            GridworldAction.NOOP: (0, 0)
         }
         return action_map[action]
 
@@ -55,8 +81,8 @@ class WindyGridworld(Env):
             x = self.wind_grid.shape[1] - 1
         return (y, x)
 
-    def take_action(self, pos: Tuple[int, int], action: Action) -> Tuple[int, int]:
-        dy, dx = self.action_to_dydx(Action(action))
+    def take_action(self, pos: Tuple[int, int], action: GridworldAction) -> Tuple[int, int]:
+        dy, dx = self.action_to_dydx(GridworldAction(action))
         pos = (pos[0] + dy, pos[1] + dx)
         pos = self.clamp_pos(pos)
         return pos
