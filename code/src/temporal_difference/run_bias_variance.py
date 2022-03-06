@@ -10,7 +10,8 @@ from dataclasses import dataclass
 import numpy as np
 
 from typing import Callable, Dict, List
-from lib.temporal_difference.algorithms import sarsa
+from lib.monte_carlo.algorithms import on_policy_mc_control_epsilon_soft
+from lib.temporal_difference.algorithms import n_step_sarsa, sarsa
 from lib.temporal_difference.windy_gridworld import WindyGridworld, windy_gridworld_1
 
 
@@ -26,7 +27,7 @@ N_EVAL_EPS = 100
 @dataclass
 class Experiment:
     algo_name: str
-    algo: Callable[[Dict[str, np.ndarray], Dict[str, float], int, bool], Dict]
+    algo: Callable[[WindyGridworld, Dict[str, np.ndarray], Dict[str, float], int, bool], Dict]
     n_episodes: int
     Q: Dict[str, np.ndarray]
     V: Dict[str, float]
@@ -34,27 +35,54 @@ class Experiment:
 
 
 def td_0(
+        env: WindyGridworld,
         Q: Dict[str, np.ndarray],
         V: Dict[str, float],
         n_eps: int,
         learning: bool = True) -> Dict:
-    pass
+    return sarsa(
+        env,
+        ALPHA,
+        EPS,
+        GAMMA,
+        n_eps,
+        learning,
+        Q,
+        V)
 
 
 def n_step_td(
+        env: WindyGridworld,
         Q: Dict[str, np.ndarray],
         V: Dict[str, float],
         n_eps: int,
         learning: bool = True) -> Dict:
-    pass
+    return n_step_sarsa(
+        env,
+        N_STEPS,
+        ALPHA,
+        EPS,
+        GAMMA,
+        n_eps,
+        learning,
+        Q,
+        V)
 
 
 def mc_control(
+        env: WindyGridworld,
         Q: Dict[str, np.ndarray],
         V: Dict[str, float],
         n_eps: int,
         learning: bool = True) -> Dict:
-    pass
+    return on_policy_mc_control_epsilon_soft(
+        env,
+        n_eps,
+        GAMMA,
+        EPS,
+        learning,
+        Q,
+        V)
 
 
 def main():
@@ -75,7 +103,7 @@ def main():
     for algo_name, algo in algorithms:
         for n_eps in n_episodes:
             V = defaultdict(lambda: .0)
-            results = algo(Q, V, n_eps)
+            results = algo(env, Q, V, n_eps)
             train_experiment = Experiment(
                 algo_name=algo_name,
                 algo=algo,
@@ -89,6 +117,7 @@ def main():
     eval_experiments: List[Experiment] = []
     for train_experiment in training_experiments:
         results = train_experiment.algo(
+            env,
             Q,
             train_experiment.V,
             N_EVAL_EPS,
