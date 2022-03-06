@@ -143,11 +143,13 @@ def monte_carlo_windy_gridworld(
     trial_returns = np.zeros((n_trials, n_episodes))
     trial_episode_lengths = np.zeros((n_trials, n_episodes))
     for t in trange(n_trials, desc='Trial', leave=False):
-        returns, episode_lengths = on_policy_mc_control_epsilon_soft(
+        results = on_policy_mc_control_epsilon_soft(
             env,
             n_episodes,
             gamma,
             eps)
+        returns = results['returns']
+        episode_lengths = results['episode_lengths']
         trial_returns[t, :] = returns
         trial_episode_lengths[t, :] = episode_lengths
     
@@ -164,12 +166,14 @@ def sarsa_windy_gridworld(
     trial_returns = np.zeros((n_trials, n_episodes))
     trial_episode_lengths = np.zeros((n_trials, n_episodes))
     for t in trange(n_trials, desc='Trial', leave=False):
-        returns, episode_lengths = sarsa(
+        results = sarsa(
             env,
             alpha,
             eps,
             gamma,
             n_episodes)
+        returns = results['returns']
+        episode_lengths = results['episode_lengths']
         trial_returns[t, :] = returns
         trial_episode_lengths[t, :] = episode_lengths
     
@@ -185,12 +189,14 @@ def expected_sarsa_windy_gridworld(
     trial_returns = np.zeros((n_trials, n_episodes))
     trial_episode_lengths = np.zeros((n_trials, n_episodes))
     for t in trange(n_trials, desc='Trial', leave=False):
-        returns, episode_lengths = expected_sarsa(
+        results = expected_sarsa(
             env,
             alpha,
             eps,
             gamma,
             n_episodes)
+        returns = results['returns']
+        episode_lengths = results['episode_lengths']
         trial_returns[t, :] = returns
         trial_episode_lengths[t, :] = episode_lengths
     
@@ -208,13 +214,15 @@ def n_step_sarsa_windy_gridworld(
     trial_returns = np.zeros((n_trials, n_episodes))
     trial_episode_lengths = np.zeros((n_trials, n_episodes))
     for t in trange(n_trials, desc='Trial', leave=False):
-        returns, episode_lengths = n_step_sarsa(
+        results = n_step_sarsa(
             env,
             n_steps,
             alpha,
             eps,
             gamma,
             n_episodes)
+        returns = results['returns']
+        episode_lengths = results['episode_lengths']
         trial_returns[t, :] = returns
         trial_episode_lengths[t, :] = episode_lengths
     
@@ -230,12 +238,14 @@ def q_learning_windy_gridworld(
     trial_returns = np.zeros((n_trials, n_episodes))
     trial_episode_lengths = np.zeros((n_trials, n_episodes))
     for t in trange(n_trials, desc='Trial', leave=False):
-        returns, episode_lengths = q_learning(
+        results = q_learning(
             env,
             alpha,
             eps,
             gamma,
             n_episodes)
+        returns = results['returns']
+        episode_lengths = results['episode_lengths']
         trial_returns[t, :] = returns
         trial_episode_lengths[t, :] = episode_lengths
     

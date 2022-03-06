@@ -21,8 +21,10 @@ def sarsa(
         alpha: float,
         epsilon: float,
         gamma: float,
-        n_episodes: int) -> np.ndarray:
+        n_episodes: int) -> Dict:
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
+    V = defaultdict(lambda: 0)
+    V_targets = []
 
     policy = create_epsilon_policy(Q, epsilon)
     returns = np.zeros(n_episodes)
@@ -38,19 +40,30 @@ def sarsa(
             G = (gamma * G) + r
             a_prime = policy(s_prime)
             Q[s][a] = Q[s][a] + (alpha * (r + (gamma * Q[s_prime][a_prime]) - Q[s][a]))
+            
+            V_target = r + (gamma * V[s_prime])
+            V[s] = V[s] + (alpha * (V_target - V[s]))
+            V_targets.append(V_target)
+
             s = s_prime
             a = a_prime
             i += 1
         returns[e] = G
         episode_lengths[e] = i
-    return returns, episode_lengths
+    return {
+        'Q': Q,
+        'V': V,
+        'returns': returns,
+        'episode_lengths': episode_lengths,
+        'V_targets': V_targets
+    }
 
 
 def expected_sarsa(env: Env,
         alpha: float,
         epsilon: float,
         gamma: float,
-        n_episodes: int) -> np.ndarray:
+        n_episodes: int) -> Dict:
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
     policy = create_epsilon_policy(Q, epsilon)
     returns = np.zeros(n_episodes)
@@ -73,7 +86,11 @@ def expected_sarsa(env: Env,
             i += 1
         returns[e] = G
         episode_lengths[e] = i
-    return returns, episode_lengths
+    return {
+        'Q': Q,
+        'returns': returns,
+        'episode_lengths': episode_lengths
+    }
 
 
 def n_step_sarsa(
@@ -82,8 +99,9 @@ def n_step_sarsa(
         alpha: float,
         epsilon: float,
         gamma: float,
-        n_episodes: int) -> np.ndarray:
+        n_episodes: int) -> Dict:
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
+    V = defaultdict(lambda: 0)
     policy = create_epsilon_policy(Q, epsilon)
     returns = np.zeros(n_episodes)
     episode_lengths = np.zeros(n_episodes)
@@ -128,7 +146,7 @@ def n_step_sarsa(
             t += 1
         returns[e] = ep_G
         episode_lengths[e] = t
-    return returns, episode_lengths
+    return {'Q': Q, 'returns': returns, 'episode_lengths': episode_lengths}
 
 
 def q_learning(
@@ -136,7 +154,7 @@ def q_learning(
         alpha: float,
         epsilon: float,
         gamma: float,
-        n_episodes: int) -> np.ndarray:
+        n_episodes: int) -> Dict:
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
     b_policy = create_epsilon_policy(Q, epsilon)
     t_policy = create_epsilon_policy(Q, .0)
@@ -158,4 +176,4 @@ def q_learning(
             i += 1
         returns[e] = G
         episode_lengths[e] = i
-    return returns, episode_lengths
+    return {'Q': Q, 'returns': returns, 'episode_lengths': episode_lengths}

@@ -36,12 +36,12 @@ def main():
         env = Racetrack(track)
         for t in range(N_TRIALS): 
             print(f'Trial: {t} / {N_TRIALS}')
-            returns = on_policy_mc_control_epsilon_soft(
+            results = on_policy_mc_control_epsilon_soft(
                 env,
                 N_EPISODES,
                 GAMMA,
                 EPS)
-            trial_returns[t, :] = returns
+            trial_returns[t, :] = results['returns']
 
         avg_ret = np.average(trial_returns, axis=0)
         plt.plot(avg_ret, color=colors[i], label=f'Track: {str(i)}')

@@ -28,12 +28,12 @@ def main():
     for eps, clr in zip(epsilons, colors):
         trial_returns = []
         for t in range(N_TRIALS):
-            returns = on_policy_mc_control_epsilon_soft(
+            results = on_policy_mc_control_epsilon_soft(
                 env,
                 N_EPISODES,
                 GAMMA,
                 eps)
-            trial_returns.append(returns)
+            trial_returns.append(results['returns'])
 
         avg_ret = np.average(trial_returns, axis=0)
         plt.plot(avg_ret, color=clr, label=f'Epsilon: {str(eps)}')

@@ -35,23 +35,15 @@ def generate_episode(env: gym.Env, policy: Callable, es: bool = False):
 
 def on_policy_mc_control_epsilon_soft(
     env: gym.Env, num_episodes: int, gamma: float, epsilon: float) -> np.ndarray:
-    """On-policy Monte Carlo policy control for epsilon soft policies.
-
-    Args:
-        env (gym.Env): a Gym API compatible environment
-        num_episodes (int): Number of episodes
-        gamma (float): Discount factor of MDP
-        epsilon (float): Parameter for epsilon soft policy (0 <= epsilon <= 1)
-    Returns:
-
-    """
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
     N = defaultdict(lambda: np.zeros(env.action_space.n))
+    V = defaultdict(lambda: 0)
 
     policy = create_epsilon_policy(Q, .5)
     returns = np.zeros(num_episodes)
     episode_lengths = np.zeros(num_episodes)
     
+    V_targets = []
     for i in trange(num_episodes, desc="Episode", leave=False):
         episode = generate_episode(env, policy)
         G = 0
@@ -59,13 +51,20 @@ def on_policy_mc_control_epsilon_soft(
         for t in range(len(episode) - 1, -1, -1):
             s, a, r = episode[t]
             G = (gamma * G) + r
-            
+            V_targets.append(G)
             N[s][a] = N[s][a] + 1
             Q[s][a] = Q[s][a] + ((1. / N[s][a]) * (G - Q[s][a]))
+            V[s] = V[s] + ((1./N[s]) * (G - V[s]))
 
         returns[i] = G
         episode_lengths[i] = len(episode)
-    return returns, episode_lengths
+    return {
+        'Q': Q,
+        'V': V,
+        'returns': returns,
+        'episode_lengths': episode_lengths,
+        'V_targets': V_targets
+    }
 
 
 
