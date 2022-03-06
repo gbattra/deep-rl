@@ -152,7 +152,6 @@ def main():
     if args.run_all:
         experiments = [
             (False, False, False, 5000),
-            (True, False, False, 5000),
             (True, True, False, 5000),
             (True, True, True, 5000),
         ]
