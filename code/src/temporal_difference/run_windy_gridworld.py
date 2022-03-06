@@ -142,6 +142,8 @@ def main():
     parser.add_argument(
         '--noop-action', help='Enable noop action', action='store_true')
     parser.add_argument(
+        '--stochastic-wind', help='Enable stochastic wind', action='store_true')
+    parser.add_argument(
         '--run-all', help='Run all experiments', action='store_true')
     parser.add_argument(
         '--max-t', help='Max episode timesteps', type=int, default=5000)
@@ -149,17 +151,18 @@ def main():
 
     if args.run_all:
         experiments = [
-            (False, False, 5000),
-            (True, False, 5000),
-            (True, True, 5000),
+            (False, False, False, 5000),
+            (True, False, False, 5000),
+            (True, True, False, 5000),
+            (True, True, True, 5000),
         ]
 
         all_returns = []
         all_episode_lengths = []
         experiment_titles = []
-        for king_moves, noop_action, max_t in experiments:
+        for king_moves, noop_action, stochastic_wind, max_t in experiments:
             wind_grid = windy_gridworld_1()
-            env = WindyGridworld(wind_grid, king_moves, noop_action, max_t)
+            env = WindyGridworld(wind_grid, king_moves, noop_action, stochastic_wind, max_t)
             experiment_titles.append(env.to_string())
             algo_returns, algo_episode_lengths = run_experiment(env)
             all_returns.append(algo_returns)
@@ -172,8 +175,8 @@ def main():
         exit()
     else:
         wind_grid = windy_gridworld_1()
-        env = WindyGridworld(wind_grid, args.king_moves, args.noop_action, args.max_t)
-        algo_returns, algo_episode_lengths = run_experiment(env)
+        env = WindyGridworld(wind_grid, args.king_moves, args.noop_action, args.stochastic_wind, args.max_t)
+        returns, episode_lengths = run_experiment(env)
         plot_returns(returns, env.to_string())
         plot_episode_lengths(episode_lengths, env.to_string())
         exit()

@@ -34,6 +34,7 @@ class WindyGridworld(Env):
             wind_grid: np.ndarray,
             king_moves: bool = False,
             noop_action: bool = False,
+            stochastic_wind: bool = False,
             max_t: int = 5000) -> None:
         super().__init__()
         self.wind_grid = wind_grid
@@ -42,6 +43,7 @@ class WindyGridworld(Env):
         self.max_t = max_t
         self.king_moves = king_moves
         self.noop_action = noop_action
+        self.stochastic_wind = stochastic_wind
         self.action_space = spaces.Discrete(4 + (5 if king_moves and noop_action else (4 if king_moves else 0)))
         self.observation_space = spaces.Tuple([
             spaces.Discrete(self.wind_grid.shape[0]),
@@ -53,7 +55,8 @@ class WindyGridworld(Env):
         return f'Windy Gridworld - ' \
             + f'Action Space: {self.action_space.n} - ' \
             + f'King Moves: {str(self.king_moves)} - ' \
-            + f'Noop Action: {str(self.noop_action)}'
+            + f'Noop Action: {str(self.noop_action)} - ' \
+            + f'Stochastic Wind: {str(self.stochastic_wind)}'
 
     def action_to_dydx(self, action: GridworldAction) -> Tuple[int, int]:
         action_map = {
@@ -88,7 +91,14 @@ class WindyGridworld(Env):
         return pos
 
     def apply_wind(self, pos: Tuple[int, int]) -> Tuple[int, int]:
+        sample = np.random.random()
+        noise = 0
+        if sample < 2./3.:
+            noise = 1
+        if sample < 1./3.:
+            noise = -1
         wind = self.wind_grid[pos]
+        wind += noise if self.stochastic_wind else 0
         pos = (pos[0] + int(wind), pos[1])
         pos = self.clamp_pos(pos)
         return pos
