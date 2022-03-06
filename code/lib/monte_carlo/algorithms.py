@@ -60,12 +60,11 @@ def on_policy_mc_control_epsilon_soft(
         for t in range(len(episode) - 1, -1, -1):
             s, a, r = episode[t]
             G = (gamma * G) + r
-            V_targets.append(G)
+            V_targets[s].append(G)
             N[s][a] = N[s][a] + 1
             if learning:
                 Q[s][a] = Q[s][a] + ((1. / N[s][a]) * (G - Q[s][a]))
                 V[s] = V[s] + ((1./np.sum(N[s])) * (G - V[s]))
-            V_targets[s].append(G)
 
         returns[i] = G
         episode_lengths[i] = len(episode)
