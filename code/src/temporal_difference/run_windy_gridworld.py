@@ -66,7 +66,7 @@ def run_monte_carlo_control(env: WindyGridworld):
         N_TRIALS,
         N_EPISODES,
         GAMMA,
-        EPS)
+        .25)
     return returns, episode_lengths
 
 

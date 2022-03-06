@@ -35,7 +35,7 @@ class WindyGridworld(Env):
             king_moves: bool = False,
             noop_action: bool = False,
             stochastic_wind: bool = False,
-            max_t: int = 5000) -> None:
+            max_t: int = 1000) -> None:
         super().__init__()
         self.wind_grid = wind_grid
         self.pos = (0, 0)

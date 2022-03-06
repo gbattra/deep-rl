@@ -1,5 +1,5 @@
 import gym
-from typing import Callable, Tuple
+from typing import Callable, Dict, Optional, Tuple
 from collections import defaultdict
 from tqdm import trange
 import numpy as np
@@ -34,16 +34,25 @@ def generate_episode(env: gym.Env, policy: Callable, es: bool = False):
 
 
 def on_policy_mc_control_epsilon_soft(
-    env: gym.Env, num_episodes: int, gamma: float, epsilon: float) -> np.ndarray:
-    Q = defaultdict(lambda: np.zeros(env.action_space.n))
+        env: gym.Env,
+        num_episodes: int,
+        gamma: float,
+        epsilon: float,
+        learning: bool = True,
+        Q: Optional[Dict[str, np.ndarray]] = None,
+        V: Optional[Dict[str, float]] = None) -> np.ndarray:
+    if Q is None:
+        Q = defaultdict(lambda: np.zeros(env.action_space.n))
+    if V is None:
+        V = defaultdict(lambda: .0)
     N = defaultdict(lambda: np.zeros(env.action_space.n))
     V = defaultdict(lambda: 0)
+    V_targets = defaultdict(lambda: [])
 
-    policy = create_epsilon_policy(Q, .5)
+    policy = create_epsilon_policy(Q, epsilon)
     returns = np.zeros(num_episodes)
     episode_lengths = np.zeros(num_episodes)
     
-    V_targets = []
     for i in trange(num_episodes, desc="Episode", leave=False):
         episode = generate_episode(env, policy)
         G = 0
@@ -53,8 +62,10 @@ def on_policy_mc_control_epsilon_soft(
             G = (gamma * G) + r
             V_targets.append(G)
             N[s][a] = N[s][a] + 1
-            Q[s][a] = Q[s][a] + ((1. / N[s][a]) * (G - Q[s][a]))
-            V[s] = V[s] + ((1./N[s]) * (G - V[s]))
+            if learning:
+                Q[s][a] = Q[s][a] + ((1. / N[s][a]) * (G - Q[s][a]))
+                V[s] = V[s] + ((1./np.sum(N[s])) * (G - V[s]))
+            V_targets[s].append(G)
 
         returns[i] = G
         episode_lengths[i] = len(episode)

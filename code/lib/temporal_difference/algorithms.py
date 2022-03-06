@@ -6,7 +6,7 @@ Algorithms for TD learning
 '''
 
 from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 from gym import Env
@@ -21,10 +21,15 @@ def sarsa(
         alpha: float,
         epsilon: float,
         gamma: float,
-        n_episodes: int) -> Dict:
-    Q = defaultdict(lambda: np.zeros(env.action_space.n))
-    V = defaultdict(lambda: 0)
-    V_targets = []
+        n_episodes: int,
+        learning: bool = True,
+        Q: Optional[Dict[str, np.ndarray]] = None,
+        V: Optional[Dict[str, float]] = None) -> Dict:
+    if Q is None:
+        Q = defaultdict(lambda: np.zeros(env.action_space.n))
+    if V is None:
+        V = defaultdict(lambda: .0)
+    V_targets = defaultdict(lambda: [])
 
     policy = create_epsilon_policy(Q, epsilon)
     returns = np.zeros(n_episodes)
@@ -39,11 +44,11 @@ def sarsa(
             s_prime, r, done, _ = env.step(a)
             G = (gamma * G) + r
             a_prime = policy(s_prime)
-            Q[s][a] = Q[s][a] + (alpha * (r + (gamma * Q[s_prime][a_prime]) - Q[s][a]))
-            
             V_target = r + (gamma * V[s_prime])
-            V[s] = V[s] + (alpha * (V_target - V[s]))
-            V_targets.append(V_target)
+            if learning:
+                Q[s][a] = Q[s][a] + (alpha * (r + (gamma * Q[s_prime][a_prime]) - Q[s][a]))
+                V[s] = V[s] + (alpha * (V_target - V[s]))
+            V_targets[s].append(V_target)
 
             s = s_prime
             a = a_prime
@@ -99,9 +104,15 @@ def n_step_sarsa(
         alpha: float,
         epsilon: float,
         gamma: float,
-        n_episodes: int) -> Dict:
-    Q = defaultdict(lambda: np.zeros(env.action_space.n))
-    V = defaultdict(lambda: 0)
+        n_episodes: int,
+        learning: bool = True,
+        Q: Optional[Dict[str, np.ndarray]] = None,
+        V: Optional[Dict[str, float]] = None) -> Dict:
+    if Q is None:
+        Q = defaultdict(lambda: np.zeros(env.action_space.n))
+    if V is None:
+        V = defaultdict(lambda: .0)
+    V_targets = defaultdict(lambda: [])
     policy = create_epsilon_policy(Q, epsilon)
     returns = np.zeros(n_episodes)
     episode_lengths = np.zeros(n_episodes)
@@ -142,11 +153,20 @@ def n_step_sarsa(
             if tau >= 0:
                 G = compute_gain(tau, obs)
                 s_tau, a_tau, _ = obs[tau]
-                Q[s_tau][a_tau] = Q[s_tau][a_tau] + (alpha * (G - Q[s_tau][a_tau]))
+                if learning:
+                    Q[s_tau][a_tau] = Q[s_tau][a_tau] + (alpha * (G - Q[s_tau][a_tau]))
+                    V[s_tau] = V[s_tau] + (alpha * (G - V[s_tau]))
+                V_targets[s_tau].append(G)
             t += 1
         returns[e] = ep_G
         episode_lengths[e] = t
-    return {'Q': Q, 'returns': returns, 'episode_lengths': episode_lengths}
+    return {
+        'Q': Q,
+        'V': V,
+        'V_targets': V_targets,
+        'returns': returns,
+        'episode_lengths': episode_lengths
+    }
 
 
 def q_learning(
