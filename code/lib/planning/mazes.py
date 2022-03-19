@@ -110,3 +110,19 @@ def blocking_maze_end() -> np.ndarray:
     print('End Maze:')
     print(maze)
     return maze
+
+
+def shortcut_maze_start() -> np.ndarray:
+    maze = np.zeros((6, 9))
+    maze[3, 1:9] = Maze.WALL
+    print('Start Maze:')
+    print(maze)
+    return maze
+
+
+def shortcut_maze_end() -> np.ndarray:
+    maze = np.zeros((6, 9))
+    maze[3, 1:8] = Maze.WALL
+    print('End Maze:')
+    print(maze)
+    return maze

@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 from tqdm import trange
 from lib.planning.dyna_q import dyna_q_plus
-from lib.planning.mazes import Maze, blocking_maze_end, blocking_maze_start
+from lib.planning.mazes import Maze, shortcut_maze_end, shortcut_maze_start
 
 
 TOGGLE_STEP: int = 1000
@@ -21,14 +21,14 @@ ALPHA: float = .1
 EPSILON: float = .1
 
 
-def run_blocking_dynaq_plus():
+def run_shortcut_dynaq_plus():
     print('Dyna-Q+')
     env = Maze(
-        blocking_maze_start(),
-        blocking_maze_end(),
+        shortcut_maze_start(),
+        shortcut_maze_end(),
         TOGGLE_STEP)
     n_plan_steps = [10, 100, 250]
-    k_vals = [.0, 1e-3]
+    k_vals = [0, 1e-3]
     styles = ['solid', 'dotted']
     colors = [
         (1., .0, .0),
@@ -60,7 +60,7 @@ def run_blocking_dynaq_plus():
                 color=color,
                 linestyle=style)
 
-    plt.title('Blocking Maze | Dyna-Q+')
+    plt.title('Shortcut Maze | Dyna-Q+')
     plt.xlabel('Timesteps')
     plt.ylabel('Avg. Episodes')
     plt.legend()
@@ -68,7 +68,7 @@ def run_blocking_dynaq_plus():
 
 
 def main():
-    run_blocking_dynaq_plus()
+    run_shortcut_dynaq_plus()
 
 
 if __name__ == '__main__':
