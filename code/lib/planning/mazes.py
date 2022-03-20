@@ -6,8 +6,9 @@ Domain implementation for blocking and shortcut mazes
 '''
 
 from enum import Enum, IntEnum
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from gym import spaces, Env
+from gym.utils import seeding
 import numpy as np
 
 
@@ -49,6 +50,20 @@ class Maze(Env):
             spaces.Discrete(self.start_maze.shape[1])
         ])
         self.t = 0
+
+    def seed(self, seed: Optional[int] = None) -> List[int]:
+        """Fix seed of environment
+
+        In order to make the environment completely reproducible, call this function and seed the action space as well.
+            env = gym.make(...)
+            env.seed(seed)
+            env.action_space.seed(seed)
+
+        This function does not need to be used for this assignment, it is given only for reference.
+        """
+
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
 
     def _action_to_dydx(self, action: MazeAction) -> Tuple[int, int]:
         action_map = {
@@ -98,7 +113,7 @@ class Maze(Env):
         over all slip types
         """
         slip_pdf = [1. - noise, (noise / 2.), (noise / 2.)]
-        x = self.rand.random()
+        x = self.np_random.random()
         a = 0
         while x > sum(slip_pdf[:a+1]):
             a += 1
@@ -116,7 +131,8 @@ class Maze(Env):
         return action_taken
 
     def _take_action(self, pos: Tuple[int, int], action: int) -> Tuple[int, int]:
-        dy, dx = self._action_to_dydx(MazeAction(action))
+        action = self._domain_slip(MazeAction(action))
+        dy, dx = self._action_to_dydx(action)
         pos = (pos[0] + dy, pos[1] + dx)
         pos = self._clamp_pos(pos)
         return pos
