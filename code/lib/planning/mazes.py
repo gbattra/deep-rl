@@ -5,7 +5,7 @@
 Domain implementation for blocking and shortcut mazes
 '''
 
-from enum import IntEnum
+from enum import Enum, IntEnum
 from typing import Any, Dict, Tuple
 from gym import spaces, Env
 import numpy as np
@@ -18,6 +18,12 @@ class MazeAction(IntEnum):
     LEFT = 3
 
 
+class Slip(Enum):
+    NONE = 0
+    NEGATIVE = 1
+    POSITIVE = 2
+
+
 class Maze(Env):
     START: Tuple[int, int] = (5, 3)
     GOAL: Tuple[int, int] = (0, 8)
@@ -27,13 +33,15 @@ class Maze(Env):
             self,
             start_maze: np.ndarray,
             end_maze: np.ndarray,
-            toggle_step: int) -> None:
+            toggle_step: int,
+            noise: float = .0) -> None:
         super().__init__()
         self.curr_maze = end_maze
-        self.toggled = False
+        self.noise = noise
         self.start_maze = start_maze
         self.end_maze = end_maze
         self.toggle_step = toggle_step
+        self.toggled = False
         self.pos = self.START
         self.action_space = spaces.Discrete(len(MazeAction))
         self.observation_space = spaces.Tuple([
@@ -62,6 +70,50 @@ class Maze(Env):
         if x >= self.curr_maze.shape[1]:
             x = self.curr_maze.shape[1] - 1
         return (y, x)
+    
+    def _slip_action(self, action: MazeAction, slip: Slip):
+        """
+        Apply a chosen slip type to an action
+        """
+        new_action_idx = action.value
+
+        if slip == Slip.NONE:
+            return MazeAction(new_action_idx)
+
+        if slip == Slip.NEGATIVE:
+            new_action_idx -= 1
+            if new_action_idx < 0:
+                new_action_idx = len(MazeAction) - 1
+        if slip == Slip.POSITIVE:
+            new_action_idx += 1
+            if new_action_idx >= len(MazeAction):
+                new_action_idx = 0
+
+        action_taken = MazeAction(new_action_idx)
+        return action_taken
+
+    def _generate_slip(self, noise: float) -> Slip:
+        """
+        Generate a slip type via probability distribution function
+        over all slip types
+        """
+        slip_pdf = [1. - noise, (noise / 2.), (noise / 2.)]
+        x = self.rand.random()
+        a = 0
+        while x > sum(slip_pdf[:a+1]):
+            a += 1
+        slip = Slip(a)
+        return slip
+
+    def _domain_slip(self, action: MazeAction) -> MazeAction:
+        """
+        Apply domain noise to an action. Choose a type of
+        slip from a probability distribution function of
+        all types of slips.
+        """
+        slip = self._generate_slip(self.noise)
+        action_taken = self._slip_action(action, slip)
+        return action_taken
 
     def _take_action(self, pos: Tuple[int, int], action: int) -> Tuple[int, int]:
         dy, dx = self._action_to_dydx(MazeAction(action))

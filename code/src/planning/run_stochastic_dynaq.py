@@ -2,7 +2,7 @@
 # 03.12.2022
 
 '''
-Executable for running the shortcut maze Dyna-Q implementation
+Executable for running Dyna-Q implementation for stochastic environments
 '''
 
 import numpy as np
@@ -21,12 +21,13 @@ ALPHA: float = .1
 EPSILON: float = .1
 
 
-def run_shortcut_dynaq_plus():
+def run_stochastic_dynaq_plus():
     print('Dyna-Q+')
     env = Maze(
         shortcut_maze_start(),
         shortcut_maze_end(),
-        TOGGLE_STEP)
+        TOGGLE_STEP,
+        .2)
     n_plan_steps = [10, 100, 250]
     k_vals = [0, 1e-3]
     styles = ['solid', 'dotted']
@@ -60,7 +61,7 @@ def run_shortcut_dynaq_plus():
                 color=color,
                 linestyle=style)
 
-    plt.title('Shortcut Maze | Dyna-Q+')
+    plt.title('Stochastic Shortcut Maze | Dyna-Q+')
     plt.xlabel('Timesteps')
     plt.ylabel('Avg. Episodes')
     plt.legend()
@@ -68,7 +69,7 @@ def run_shortcut_dynaq_plus():
 
 
 def main():
-    run_shortcut_dynaq_plus()
+    run_stochastic_dynaq_plus()
 
 
 if __name__ == '__main__':
