@@ -6,6 +6,7 @@ Function approximation algos
 '''
 
 
+from collections import defaultdict
 from gym import Env
 import numpy as np
 
@@ -28,13 +29,13 @@ def semigrad_onestep_sarsa(
     W = np.zeros((n_feats, env.action_space.n))
     policy = generate_policy(Q, epsilon)
 
-    for _ in trange(n_episodes, desc='Episode'):
+    episode_lengths = np.zeros(n_episodes)
+    for e in trange(n_episodes, desc='Episode', leave=False):
         s = env.reset()
         x = X(s)
         a = policy(x, W)
         done = False
-        i = 0
-        # term = 1000000
+        t = 0
         while not done:
             s_prime, r, done, _ = env.step(a)
             x_prime = X(s_prime)
@@ -48,8 +49,8 @@ def semigrad_onestep_sarsa(
 
             x = x_prime
             a = a_next
-            i += 1
-            # if i % term == 0:
-            #     done = True
+            t += 1
+        episode_lengths[e] = t
+        
 
-    return {'W': W}
+    return {'W': W, 'episode_lengths': episode_lengths}
