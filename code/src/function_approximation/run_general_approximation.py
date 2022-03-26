@@ -16,7 +16,7 @@ from lib.function_approximation.features import get_feature_extractor, one_hot_e
 from lib.function_approximation.four_rooms import FourRooms, four_rooms_arena
 from lib.function_approximation.policy import q_function
 
-ALPHA: float = 0.005
+ALPHA: float = 0.001
 GAMMA: float = 0.99
 EPSILON: float = 0.1
 N_EPISODES: int = 100
