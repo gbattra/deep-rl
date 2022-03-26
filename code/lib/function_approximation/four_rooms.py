@@ -41,9 +41,10 @@ class FourRooms(gym.Env):
             gym.spaces.Discrete(self.arena.shape[0]),
             gym.spaces.Discrete(self.arena.shape[1])
         ])
+        self.pos = (self.arena.shape[0]-1, 0)
 
     def reset(self) -> Tuple[int, int]:
-        self.pos = (self.arena.shape[0] - 1, 0)
+        self.pos = (self.arena.shape[0]-1, 0)
         return self._pos_idx(self.pos)
 
     def seed(self, seed: Optional[int] = None) -> List[int]:
@@ -133,7 +134,7 @@ class FourRooms(gym.Env):
         return pos
 
     def _pos_idx(self, pos: Tuple[int, int]) -> int:
-        return (self.pos[0] * self.arena.shape[1]) + self.pos[1]
+        return (pos[0] * self.arena.shape[1]) + pos[1]
 
     def step(self, action: int) -> Tuple[Tuple[int, int], float, bool, Dict[str, Any]]:
         new_pos = self._take_action(self.pos, action)

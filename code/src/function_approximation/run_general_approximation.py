@@ -27,7 +27,7 @@ def main():
     arena = four_rooms_arena()
     env = FourRooms(arena)
     n_feats = 3
-    X = lambda s: xy_features(s, arena.shape[0], arena.shape[1])
+    X = lambda s: xy_features(s, arena.shape[1])
     Q = q_function
     total_results = np.zeros((N_TRIALS, N_EPISODES))
     for t in trange(N_TRIALS, desc='Trial', leave=False):
@@ -44,7 +44,7 @@ def main():
     
     color = (1., .0, .0)
     avg_ret = np.average(total_results, axis=0)
-    plt.plot(avg_ret, color=color, label='Tabular S.G. One-Step SARSA')
+    plt.plot(avg_ret, color=color)
     
     stde_avg_ret = 1.96 * (np.std(total_results) / np.sqrt(N_EPISODES))
     y_neg = avg_ret - stde_avg_ret

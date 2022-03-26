@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import trange
 
-from lib.function_approximation.aggregators import get_aggregator, segment
+from lib.function_approximation.aggregators import segment
 from lib.function_approximation.algorithms import semigrad_onestep_sarsa
 from lib.function_approximation.features import get_feature_extractor, one_hot_encode
 from lib.function_approximation.four_rooms import FourRooms, four_rooms_arena
@@ -37,8 +37,8 @@ def main():
     print('Running segmentation experiments...')
     for seg_size, color in zip(seg_sizes, colors):
         print(f'Segment Size: {seg_size}')
-        n_feats = int(math.ceil(arena.size / seg_size))
-        segmentor = get_aggregator(seg_size, segment)
+        n_feats = int(math.ceil(arena.shape[0] / seg_size) * arena.shape[1])
+        segmentor = lambda s: segment(s, arena.shape[1], seg_size)
         X = get_feature_extractor(
             n_feats,
             one_hot_encode,
