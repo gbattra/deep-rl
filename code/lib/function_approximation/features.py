@@ -30,5 +30,4 @@ def xy_features(
         x_dim: int) -> np.ndarray:
     y = s // x_dim
     x = s % x_dim
-    print(f'{s}:({y}, {x})')
     return np.array([y, x, 1.])

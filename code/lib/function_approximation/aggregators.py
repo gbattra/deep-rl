@@ -7,6 +7,7 @@ Aggregator methods
 
 from typing import Callable
 
+
 def segment(s: int, x_dim: int, seg_size: int) -> int:
     y = s // x_dim
     x = s % x_dim

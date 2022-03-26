@@ -38,8 +38,6 @@ def semigrad_onestep_sarsa(
         while not done:
             s_prime, r, done, _ = env.step(a)
             x_prime = X(s_prime)
-            if done:
-                W[:, a] += alpha * (r - Q(x, W)[a]) * x
             a_next = policy(x_prime, W)
             target = r + (gamma * Q(x_prime, W)[a_next])
             prediction = Q(x, W)[a]

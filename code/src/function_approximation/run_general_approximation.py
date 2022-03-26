@@ -10,9 +10,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import trange
 
-from lib.function_approximation.aggregators import get_aggregator, segment
 from lib.function_approximation.algorithms import semigrad_onestep_sarsa
-from lib.function_approximation.features import get_feature_extractor, one_hot_encode, xy_features
+from lib.function_approximation.features import xy_features
 from lib.function_approximation.four_rooms import FourRooms, four_rooms_arena
 from lib.function_approximation.policy import q_function
 
