@@ -7,7 +7,7 @@ Feature extractors
 
 import numpy as np
 
-from typing import Callable
+from typing import Callable, Tuple
 from lib.function_approximation.aggregators import get_aggregator
 
 
@@ -24,3 +24,13 @@ def one_hot_encode(
     enc = np.zeros(feat_size)
     enc[s] = 1
     return enc
+
+
+def xy_features(
+        s: int,
+        y_dim: int,
+        x_dim: int) -> np.ndarray:
+    y = s // y_dim
+    x = s % x_dim
+    # print(f'{s}:({y}, {x})')
+    return np.array([y, x, 1.])

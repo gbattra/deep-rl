@@ -5,33 +5,29 @@
 Executable for running linear function approximation on the four rooms problem
 '''
 
+import math
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import trange
 
 from lib.function_approximation.aggregators import get_aggregator, segment
 from lib.function_approximation.algorithms import semigrad_onestep_sarsa
-from lib.function_approximation.features import get_feature_extractor, one_hot_encode
+from lib.function_approximation.features import get_feature_extractor, one_hot_encode, xy_features
 from lib.function_approximation.four_rooms import FourRooms, four_rooms_arena
 from lib.function_approximation.policy import q_function
 
-ALPHA: float = 0.01
-GAMMA: float = 0.9
+ALPHA: float = 0.005
+GAMMA: float = 0.99
 EPSILON: float = 0.1
 N_EPISODES: int = 100
-N_TRIALS: int = 10
+N_TRIALS: int = 3
 
 
 def main():
     arena = four_rooms_arena()
     env = FourRooms(arena)
-    seg_size = 1
-    n_feats = int(arena.size / seg_size)
-    segmentor = get_aggregator(seg_size, segment)
-    X = get_feature_extractor(
-        n_feats,
-        one_hot_encode,
-        segmentor)
+    n_feats = 3
+    X = lambda s: xy_features(s, arena.shape[0], arena.shape[1])
     Q = q_function
     total_results = np.zeros((N_TRIALS, N_EPISODES))
     for t in trange(N_TRIALS, desc='Trial', leave=False):
