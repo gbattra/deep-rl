@@ -11,8 +11,8 @@ from typing import Callable
 def get_aggregator(N: int, aggregate: Callable) -> Callable:
     return lambda s: aggregate(s, N)
 
-def segment(s: int, N_segments: int) -> int:
-    return s // N_segments
+def segment(s: int, seg_size: int) -> int:
+    return s // seg_size
 
-def zone(s: int, N_zones: int) -> int:
+def zone(s: int, zone_size: int) -> int:
     pass

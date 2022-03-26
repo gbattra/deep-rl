@@ -41,11 +41,10 @@ class FourRooms(gym.Env):
             gym.spaces.Discrete(self.arena.shape[0]),
             gym.spaces.Discrete(self.arena.shape[1])
         ])
-        self.pos = self.reset()
 
     def reset(self) -> Tuple[int, int]:
-        self.pos = (self.arena.shape[0], 0)
-        return self.pos
+        self.pos = (self.arena.shape[0] - 1, 0)
+        return self._pos_idx(self.pos)
 
     def seed(self, seed: Optional[int] = None) -> List[int]:
         """Fix seed of environment
@@ -74,12 +73,12 @@ class FourRooms(gym.Env):
         y, x = pos
         if y < 0:
             y = 0
-        if y >= self.curr_maze.shape[0]:
-            y = self.curr_maze.shape[0] - 1
+        if y >= self.arena.shape[0]:
+            y = self.arena.shape[0] - 1
         if x < 0:
             x = 0
-        if x >= self.curr_maze.shape[1]:
-            x = self.curr_maze.shape[1] - 1
+        if x >= self.arena.shape[1]:
+            x = self.arena.shape[1] - 1
         return (y, x)
     
     def _slip_action(self, action: FourRoomsAction, slip: Slip):
@@ -133,18 +132,22 @@ class FourRooms(gym.Env):
         pos = self._clamp_pos(pos)
         return pos
 
+    def _pos_idx(self, pos: Tuple[int, int]) -> int:
+        return (self.pos[0] * self.arena.shape[1]) + self.pos[1]
+
     def step(self, action: int) -> Tuple[Tuple[int, int], float, bool, Dict[str, Any]]:
         new_pos = self._take_action(self.pos, action)
         done = False
         rwd = 0
-        if self.curr_maze[new_pos] == self.WALL:
+        if self.arena[new_pos] == self.WALL:
             new_pos = self.pos
-        if new_pos == self.GOAL:
-            new_pos = self.START
+        if self.arena[new_pos] == self.GOAL:
             done = True
             rwd = 1
+        # print(new_pos)
         self.pos = new_pos
-        return self.pos, rwd, done, {}
+        pos_idx = self._pos_idx(self.pos)
+        return pos_idx, rwd, done, {}
 
 
 def four_rooms_arena() -> np.ndarray:

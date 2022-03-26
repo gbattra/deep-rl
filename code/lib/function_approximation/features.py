@@ -8,20 +8,19 @@ Feature extractors
 import numpy as np
 
 from typing import Callable
-from aggregators import get_aggregator
+from lib.function_approximation.aggregators import get_aggregator
 
 
 def get_feature_extractor(
         N: int,
         extract: Callable,
-        aggregate: Callable) -> Callable:
-    aggregator = get_aggregator(N, aggregate)
+        aggregator: Callable) -> Callable:
     return lambda s: extract(aggregator(s), N)
 
 
-def one_hot_encoder(
+def one_hot_encode(
         s: int,
-        N: int) -> np.ndarray:
-    enc = np.zeros(N)
+        feat_size: int) -> np.ndarray:
+    enc = np.zeros(feat_size)
     enc[s] = 1
     return enc
