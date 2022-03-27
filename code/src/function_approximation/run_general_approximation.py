@@ -15,7 +15,7 @@ from lib.function_approximation.features import xy_features, xy_poly_features, a
 from lib.function_approximation.four_rooms import FourRooms, doors, four_rooms_arena, goal
 from lib.function_approximation.policy import q_function
 
-ALPHA: float = 0.001
+ALPHA: float = 0.01
 GAMMA: float = 0.9
 EPSILON: float = 0.1
 N_EPISODES: int = 100
@@ -24,12 +24,13 @@ N_TRIALS: int = 3
 
 def main():
     arena = four_rooms_arena()
+    print(arena)    
     env = FourRooms(arena)
 
     feature_sets = [
         # (3, lambda s: xy_features(s, arena.shape[1])),
         # (6, lambda s: xy_walls_goal__features(s, arena.shape[1]))
-        (13, lambda s: all_features(s, arena.shape[0], doors(), goal()))
+        (23, lambda s: all_features(s, arena, doors(), goal()))
     ]
     for n_feats, X in feature_sets:
         Q = q_function
