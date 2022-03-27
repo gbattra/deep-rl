@@ -58,7 +58,7 @@ def main():
             total_results[t, :] = results['episode_lengths']
         
         avg_ret = np.average(total_results, axis=0)
-        plt.plot(avg_ret, color=color, label='Tabular S.G. One-Step SARSA')
+        plt.plot(avg_ret, color=color, label=f'Segment Size: {seg_size}')
         
         stde_avg_ret = 1.96 * (np.std(total_results) / np.sqrt(N_EPISODES))
         y_neg = avg_ret - stde_avg_ret
@@ -70,6 +70,7 @@ def main():
             alpha=0.2,
             color=color)
     
+    plt.title('State Aggregation')
     plt.legend()
     plt.show()
 

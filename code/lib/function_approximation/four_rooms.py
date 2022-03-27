@@ -151,15 +151,27 @@ class FourRooms(gym.Env):
         return pos_idx, rwd, done, {}
 
 
+def goal() -> Tuple[int, int]:
+    return (0, 10)
+
+
+def doors() -> List[Tuple[int, int]]:
+    return [
+        (5, 1),
+        (2, 5),
+        (6, 8),
+        (9, 5)
+    ]
+
+
 def four_rooms_arena() -> np.ndarray:
     arena = np.ones((11, 11)) * FourRooms.EMPTY
     arena[5, 0:7] = FourRooms.WALL
     arena[6, 5:11] = FourRooms.WALL
     arena[:, 5] = FourRooms.WALL
-    arena[5, 1] = FourRooms.EMPTY
-    arena[2, 5] = FourRooms.EMPTY
-    arena[6, 8] = FourRooms.EMPTY
-    arena[9, 5] = FourRooms.EMPTY
-    arena[0, 10] = FourRooms.GOAL
+    for door in doors():
+        arena[door[0], door[1]] = FourRooms.EMPTY
+    g = goal()
+    arena[g[0], g[1]] = FourRooms.GOAL
 
     return arena
