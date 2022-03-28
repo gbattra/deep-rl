@@ -70,6 +70,8 @@ def main():
             alpha=0.2,
             color=color)
     
+    plt.xlabel('Episode')
+    plt.ylabel('Avg Episode Length')
     plt.title('State Aggregation')
     plt.legend()
     plt.show()

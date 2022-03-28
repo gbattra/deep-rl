@@ -166,7 +166,7 @@ def doors() -> List[Tuple[int, int]]:
 
 def four_rooms_arena() -> np.ndarray:
     arena = np.ones((11, 11)) * FourRooms.EMPTY
-    arena[5, 0:7] = FourRooms.WALL
+    arena[5, 0:6] = FourRooms.WALL
     arena[6, 5:11] = FourRooms.WALL
     arena[:, 5] = FourRooms.WALL
     for door in doors():

@@ -5,7 +5,6 @@
 Feature extractors
 '''
 
-from multiprocessing.connection import wait
 import numpy as np
 
 from typing import Callable, List, Tuple
@@ -68,6 +67,23 @@ def all_features(
     d_down = (y+1, x) in doors
     d_left = (y, x-1) in doors
     d_right = (y, x+1) in doors
+    active_doors = np.zeros(4)
+    in_door = np.zeros(4)
+    if d_up or d_down or d_left or d_right:
+        for i, door in enumerate(doors):
+            if (
+                (y-1, x) == door or (y+1, x) == door \
+                or (y, x+1) == door or (y, x-1) == door
+            ):
+                active_doors[i] = 1 if door == (y, x) else 0
+            if door == (y, x):
+                in_door[i] = 1
+    in_room = np.zeros(4)
+    in_room[0] = 1 if y > 5 and x < 5 else 0
+    in_room[1] = 1 if y < 5 and x < 5 else 0
+    in_room[2] = 1 if y > 6 and x > 5 else 0
+    in_room[3] = 1 if y < 6 and x > 5 else 0
+
     g_up = (y-1, x) == goal
     g_right = (y, x+1) == goal
     feats = [
@@ -93,6 +109,18 @@ def all_features(
         int(d_down),
         int(d_left),
         int(d_right),
+        active_doors[0],
+        active_doors[1],
+        active_doors[2],
+        active_doors[3],
+        in_door[0],
+        in_door[1],
+        in_door[2],
+        in_door[3],
+        in_room[0],
+        in_room[1],
+        in_room[2],
+        in_room[3],
         1.
     ]
     return np.array(feats)
