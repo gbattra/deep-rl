@@ -36,7 +36,7 @@ def main():
     optimizer = torch.optim.Adam(policy_net.parameters(), lr=LEARNING_RATE)
     loss_fn = torch.nn.MSELoss()
 
-    optimize: Callable[[torch.nn.Module, ReplayBuffer], None] = \
+    optimize: Callable[[Dqn, ReplayBuffer], None] = \
         lambda m, b: optimize_dqn(
             m,
             buffer_to_dataloader(b, BATCH_SIZE),
@@ -48,7 +48,7 @@ def main():
         policy_net=policy_net,
         target_net=target_net,
         buffer=buffer,
-        optimize=optimize_dqn,
+        optimize=optimize,
         target_update_freq=TARGET_UPDATE_FREQ,
         n_episodes=N_EPISODES,
         n_actions=N_ACTIONS,
