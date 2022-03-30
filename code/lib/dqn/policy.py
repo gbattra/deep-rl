@@ -17,10 +17,9 @@ def generate_dqn_policy(
         dqn: Dqn,
         n_actions: int,
         epsilon: float) -> Callable[[torch.Tensor], torch.Tensor]:
-    device = "cuda" if torch.cuda.is_available() else "cpu"
     def select_action(X: torch.Tensor):
         if np.random.random() < epsilon:
-            return torch.tensor([np.random.choice(n_actions)]).to(device)
+            return torch.tensor([np.random.choice(n_actions)])
 
         with torch.no_grad():
             return dqn(X).max(1)[1]

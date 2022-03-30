@@ -5,7 +5,10 @@
 Functions for non-linear function approximation with neural networks
 '''
 
+from typing import Callable
 from torch import nn
+import torch
+from torch.utils.data import DataLoader, TensorDataset
 
 
 INPUT_SIZE: int = 500
@@ -47,3 +50,21 @@ def simple_dqn_network(input_size: int, output_size: int) -> nn.Sequential:
         nn.ReLU(),
         nn.Linear(64, output_size)
     ])
+
+
+def optimize_dqn(
+        model: nn.Module,
+        dataloader: DataLoader,
+        loss_fn: Callable,
+        optimizer: torch.optim.Optimizer) -> None:
+    device = "cude" if torch.cuda.is_available() else "cpu"
+
+    model.train()
+    for batch, (X, y) in enumerate(dataloader):
+        X, y = X.to(device), y.to(device)
+        pred = model(X)
+        loss = loss_fn(pred, y)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()

@@ -13,7 +13,8 @@ from dataclasses import dataclass
 from typing import List, Tuple
 
 from torch import Tensor
-
+import torch
+from torch.utils.data import DataLoader, TensorDataset
 
 @dataclass
 class Transition:
@@ -34,3 +35,7 @@ class ReplayBuffer:
 
     def __len__(self):
         return len(self.buffer)
+
+
+def buffer_to_dataloader(buffer: ReplayBuffer, batch_size: int) -> DataLoader:
+    pass
