@@ -4,3 +4,4 @@ matplotlib==3.5.0
 gym==0.22.0
 tqdm==4.62.3
 pygame
+torch==1.11.0
