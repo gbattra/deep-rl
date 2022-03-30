@@ -58,7 +58,6 @@ def train(
         optimizer: torch.optim.Optimizer) -> None:
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    size = len(dataloader.dataset)
     model.train()
     for batch, (X, y) in enumerate(dataloader):
         X, y = X.to(device), y.to(device)
@@ -76,7 +75,7 @@ def train(
 def test(
         model: NeuralNetwork,
         dataloader: DataLoader,
-        loss_fn: Callable):
+        loss_fn: Callable) -> float:
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     num_batches = len(dataloader)
@@ -89,3 +88,4 @@ def test(
             test_loss += loss_fn(pred, y).item()
     test_loss /= float(num_batches)
     print(f"Test Avg loss: {test_loss} \r")
+    return test_loss
