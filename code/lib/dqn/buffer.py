@@ -5,7 +5,7 @@
 Buffer functions. Some code inspired by https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 '''
 
-from collections import deque
+from collections import deque, namedtuple
 import random
 import numpy as np
 
@@ -16,11 +16,8 @@ from torch import Tensor
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
-@dataclass
-class Transition:
-    state: Tensor
-    action: Tensor
-    reward: Tensor
+
+Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
 
 class ReplayBuffer:
