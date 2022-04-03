@@ -6,7 +6,7 @@ Algorithms for DQN
 '''
 
 from itertools import count
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 from gym import Env
 import torch
 
@@ -23,6 +23,7 @@ def dqn(
         target_net: Dqn,
         buffer: ReplayBuffer,
         optimize: Callable[[Dqn, Dqn, ReplayBuffer], None],
+        plotter: Callable[[List[int]], None],
         target_update_freq: int,
         n_episodes: int,
         n_actions: int,
@@ -34,6 +35,7 @@ def dqn(
     # sync target net weights with policy net
     target_net.load_state_dict(policy_net.state_dict())
 
+    durations = []
     for e in trange(n_episodes, desc='Episode', leave=False):
         s = env.reset()
         s_tensor = torch.tensor([s], device=device)
@@ -54,6 +56,8 @@ def dqn(
             optimize(policy_net, target_net, buffer)
 
             if done:
+                durations.append(t+1)
+                plotter(durations)
                 break
         
         # update target network periodically

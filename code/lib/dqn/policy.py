@@ -23,6 +23,6 @@ def generate_dqn_policy(
             return torch.tensor([[np.random.choice(n_actions)]], device=device)
 
         with torch.no_grad():
-            return torch.tensor([[q_net(X).argmax()]], device=device)
+            return q_net(X).max(1)[1].view(1, 1)
 
     return select_action

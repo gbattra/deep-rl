@@ -7,20 +7,21 @@ Run DQN on the four rooms domain
 
 from typing import Callable
 import torch
+from lib.dqn.utils import plot_durations
 from lib.domains.four_rooms import FourRooms, FourRoomsOneHot, four_rooms_arena
 from lib.dqn.algorithms import dqn
 from lib.dqn.buffer import ReplayBuffer
 from lib.dqn.nn import Dqn, optimize_dqn, simple_dqn_network
 
 
-TARGET_UPDATE_FREQ: int = 1000
+TARGET_UPDATE_FREQ: int = 10000
 REPLAY_BUFFER_SIZE: int = 100000
 BATCH_SIZE: int = 64
 GAMMA: float = 0.99
 N_EPISODES: int = 100
 N_ACTIONS: int = 4
 EPSILON: float = 0.1
-LEARNING_RATE: float = 0.01
+LEARNING_RATE: float = 0.02
 
 
 def main():
@@ -55,6 +56,7 @@ def main():
         target_net=target_net,
         buffer=buffer,
         optimize=optimize,
+        plotter=plot_durations,
         target_update_freq=TARGET_UPDATE_FREQ,
         n_episodes=N_EPISODES,
         n_actions=N_ACTIONS,

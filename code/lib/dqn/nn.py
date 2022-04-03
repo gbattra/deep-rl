@@ -74,7 +74,7 @@ def optimize_dqn(
 
     states = torch.cat(batch.state)
     actions = torch.cat(batch.action)
-    rewards = torch.cat(batch.action)
+    rewards = torch.cat(batch.reward)
 
     non_terminal_states = torch.cat([s for s in batch.next_state if s is not None])
     non_terminal_map = map(lambda state: state is not None, batch.next_state)
@@ -82,13 +82,11 @@ def optimize_dqn(
 
     next_state_q_vals = torch.zeros(batch_size, device=device)
     next_state_q_vals[non_terminal_mask] = target_net(non_terminal_states).max(1)[0].detach()
-
-    target_q_vals = ((next_state_q_vals * gamma) + rewards).gather(1, actions)
+    
+    target_q_vals = ((next_state_q_vals * gamma) + rewards)
     est_q_vals = policy_net(states).gather(1, actions)
-    # print(next_state_q_vals)
-    # print('-----')
 
-    loss = loss_fn(est_q_vals, target_q_vals)
+    loss = loss_fn(est_q_vals, target_q_vals.unsqueeze(1))
 
     optimizer.zero_grad()
     loss.backward()
