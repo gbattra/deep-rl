@@ -136,7 +136,7 @@ class FourRooms(gym.Env):
     def _pos_idx(self, pos: Tuple[int, int]) -> int:
         return (pos[0] * self.arena.shape[1]) + pos[1]
 
-    def step(self, action: int) -> Tuple[Tuple[int, int], float, bool, Dict[str, Any]]:
+    def step(self, action: int) -> Tuple[Any, float, bool, Dict[str, Any]]:
         new_pos = self._take_action(self.pos, action)
         done = False
         rwd = 0
@@ -150,6 +150,23 @@ class FourRooms(gym.Env):
         pos_idx = self._pos_idx(self.pos)
         return pos_idx, rwd, done, {}
 
+
+class FourRoomsOneHot(FourRooms):
+    def __init__(self, arena: np.ndarray, noise: float = 0) -> None:
+        super().__init__(arena, noise)
+
+    def reset(self) -> Tuple[int, int]:
+        s = super().reset()
+        s_enc = [.0] * (self.arena.shape[0] * self.arena.shape[1])
+        s_enc[s] = 1.
+        return s_enc
+
+    def step(self, action: int) -> Tuple[Any, float, bool, Dict[str, Any]]:
+        s_prime, rwd, done, results = super().step(action)
+        s_prime_enc = [.0] * (self.arena.shape[0] * self.arena.shape[1])
+        s_prime_enc[s_prime] = 1.
+        return s_prime_enc, rwd, done, results
+        
 
 def goal() -> Tuple[int, int]:
     return (0, 10)

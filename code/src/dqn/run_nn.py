@@ -14,9 +14,11 @@ from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 from lib.dqn.nn import NeuralNetwork
 
+
 N_SAMPLES: int = 500
 N_EPOCHS: int = 500
 BATCH_SIZE: int = 32
+
 
 def generate_dataset() -> TensorDataset:
     X = torch.Tensor(np.linspace(-10, 10, N_SAMPLES))

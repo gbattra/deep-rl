@@ -32,7 +32,3 @@ class ReplayBuffer:
 
     def __len__(self):
         return len(self.buffer)
-
-
-def buffer_to_dataloader(buffer: ReplayBuffer, batch_size: int) -> DataLoader:
-    pass

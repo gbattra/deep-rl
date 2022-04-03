@@ -22,33 +22,36 @@ def dqn(
         policy_net: Dqn,
         target_net: Dqn,
         buffer: ReplayBuffer,
-        optimize: Callable[[Dqn, ReplayBuffer], None],
+        optimize: Callable[[Dqn, Dqn, ReplayBuffer], None],
         target_update_freq: int,
         n_episodes: int,
         n_actions: int,
         epsilon: float) -> Dict:
-    policy = generate_dqn_policy(dqn, n_actions, epsilon)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    policy = generate_dqn_policy(policy_net, n_actions, epsilon)
 
     # sync target net weights with policy net
     target_net.load_state_dict(policy_net.state_dict())
 
     for e in trange(n_episodes, desc='Episode', leave=False):
         s = env.reset()
-        s_tensor = torch.from_numpy(s)
+        s_tensor = torch.tensor([s], device=device)
         for t in count():
             # choose action and step env
             a_tensor = policy(s_tensor)
             s_prime, r, done, _ = env.step(a_tensor.item())
-            r_tensor = torch.tensor([r])
+            s_prime_tensor = torch.tensor([s_prime], device=device)
+            r_tensor = torch.tensor([r], device=device)
 
             # store transition in replay buffer
-            buffer.add(Transition(s_tensor, a_tensor, r_tensor))
+            buffer.add(Transition(s_tensor, a_tensor, s_prime_tensor, r_tensor))
 
             # set current state as next state
-            s_tensor = torch.from_numpy(s_prime)
+            s_tensor = s_prime_tensor
 
             # one step optimization of policy net
-            optimize(policy_net, buffer)
+            optimize(policy_net, target_net, buffer)
 
             if done:
                 break

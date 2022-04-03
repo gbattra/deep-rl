@@ -66,6 +66,9 @@ def optimize_dqn(
         batch_size: int) -> None:
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
+    if len(buffer) < batch_size:
+        return
+
     sample = buffer.sample(batch_size)
     batch = Transition(*zip(*sample))
 
@@ -80,10 +83,12 @@ def optimize_dqn(
     next_state_q_vals = torch.zeros(batch_size, device=device)
     next_state_q_vals[non_terminal_mask] = target_net(non_terminal_states).max(1)[0].detach()
 
-    target_q_vals = (next_state_q_vals * gamma) + rewards
+    target_q_vals = ((next_state_q_vals * gamma) + rewards).gather(1, actions)
     est_q_vals = policy_net(states).gather(1, actions)
+    # print(next_state_q_vals)
+    # print('-----')
 
-    loss = loss_fn(est_q_vals, target_q_vals.unsqueeze(1))
+    loss = loss_fn(est_q_vals, target_q_vals)
 
     optimizer.zero_grad()
     loss.backward()
