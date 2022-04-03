@@ -34,6 +34,7 @@ class FourRooms(gym.Env):
             arena: np.ndarray,
             noise: float = .0) -> None:
         super().__init__()
+        self.observation_size = 1
         self.arena = arena
         self.noise = noise
         self.action_space = gym.spaces.Discrete(len(FourRoomsAction))
@@ -154,19 +155,55 @@ class FourRooms(gym.Env):
 class FourRoomsOneHot(FourRooms):
     def __init__(self, arena: np.ndarray, noise: float = 0) -> None:
         super().__init__(arena, noise)
+        self.observation_size = arena.shape[0] * self.arena.shape[1]
 
     def reset(self) -> Tuple[int, int]:
         s = super().reset()
-        s_enc = [.0] * (self.arena.shape[0] * self.arena.shape[1])
+        s_enc = [.0] * self.observation_size
         s_enc[s] = 1.
         return s_enc
 
     def step(self, action: int) -> Tuple[Any, float, bool, Dict[str, Any]]:
         s_prime, rwd, done, results = super().step(action)
-        s_prime_enc = [.0] * (self.arena.shape[0] * self.arena.shape[1])
+        s_prime_enc = [.0] * self.observation_size
         s_prime_enc[s_prime] = 1.
         return s_prime_enc, rwd, done, results
         
+
+class FourRoomsCoords(FourRooms):
+    def __init__(self, arena: np.ndarray, noise: float = 0) -> None:
+        super().__init__(arena, noise)
+        self.observation_size = 2
+
+    def reset(self) -> Tuple[int, int]:
+        s = super().reset()
+        return self.pos
+
+    def step(self, action: int) -> Tuple[Any, float, bool, Dict[str, Any]]:
+        _, rwd, done, results = super().step(action)
+        return self.pos, rwd, done, results
+
+
+class FourRoomsArena(FourRooms):
+    PLAYER: int = 2
+
+    def __init__(self, arena: np.ndarray, noise: float = 0) -> None:
+        super().__init__(arena, noise)
+        self.observation_size = arena.shape[0] * arena.shape[1]
+
+    def reset(self) -> np.ndarray:
+        _ = super().reset()
+        mapp = self.arena.copy()
+        mapp[self.pos[0], self.pos[1]] = self.PLAYER
+        return list(mapp.flatten())
+
+    def step(self, action: int) -> Tuple[Any, float, bool, Dict[str, Any]]:
+        _, rwd, done, results = super().step(action)
+
+        mapp = self.arena.copy()
+        mapp[self.pos[0], self.pos[1]] = self.PLAYER
+
+        return list(mapp.flatten()), rwd, done, results
 
 def goal() -> Tuple[int, int]:
     return (0, 10)

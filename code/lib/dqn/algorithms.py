@@ -38,12 +38,12 @@ def dqn(
     durations = []
     for e in trange(n_episodes, desc='Episode', leave=False):
         s = env.reset()
-        s_tensor = torch.tensor([s], device=device)
+        s_tensor = torch.tensor([s], device=device, dtype=torch.float)
         for t in count():
             # choose action and step env
             a_tensor = policy(s_tensor)
             s_prime, r, done, _ = env.step(a_tensor.item())
-            s_prime_tensor = torch.tensor([s_prime], device=device)
+            s_prime_tensor = torch.tensor([s_prime], device=device, dtype=torch.float)
             r_tensor = torch.tensor([r], device=device)
 
             # store transition in replay buffer
@@ -63,3 +63,5 @@ def dqn(
         # update target network periodically
         if e % target_update_freq == 0:
             target_net.load_state_dict(policy_net.state_dict())
+
+    plotter(durations)

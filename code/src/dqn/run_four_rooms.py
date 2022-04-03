@@ -8,7 +8,7 @@ Run DQN on the four rooms domain
 from typing import Callable
 import torch
 from lib.dqn.utils import plot_durations
-from lib.domains.four_rooms import FourRooms, FourRoomsOneHot, four_rooms_arena
+from lib.domains.four_rooms import FourRooms, FourRoomsArena, FourRoomsCoords, FourRoomsOneHot, four_rooms_arena
 from lib.dqn.algorithms import dqn
 from lib.dqn.buffer import ReplayBuffer
 from lib.dqn.nn import Dqn, optimize_dqn, simple_dqn_network
@@ -27,8 +27,9 @@ LEARNING_RATE: float = 0.02
 def main():
     arena = four_rooms_arena()
     env = FourRoomsOneHot(arena)
-    input_size = arena.shape[0]*arena.shape[1]
-    # input_size = 1
+    # env = FourRoomsCoords(arena)
+    # env = FourRoomsArena(arena)
+    input_size = env.observation_size
     output_size = env.action_space.n
     
     device = "cuda" if torch.cuda.is_available() else "cpu"
