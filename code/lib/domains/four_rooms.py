@@ -146,7 +146,6 @@ class FourRooms(gym.Env):
         if self.arena[new_pos] == self.GOAL:
             done = True
             rwd = 1
-        # print(new_pos)
         self.pos = new_pos
         pos_idx = self._pos_idx(self.pos)
         return pos_idx, rwd, done, {}

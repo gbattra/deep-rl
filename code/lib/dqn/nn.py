@@ -15,9 +15,6 @@ from torch.utils.data import DataLoader, TensorDataset
 from lib.dqn.buffer import ReplayBuffer, Transition
 
 
-INPUT_SIZE: int = 500
-
-
 class NeuralNetwork(nn.Module):
     def __init__(
             self,
@@ -48,14 +45,6 @@ class Dqn(nn.Module):
         return self.network(x)
 
 
-def simple_dqn_network(input_size: int, output_size: int) -> nn.Sequential:
-    return nn.Sequential(
-        nn.Linear(input_size, 64),
-        nn.ReLU(),
-        nn.Linear(64, output_size)
-    )
-
-
 def optimize_dqn(
         policy_net: Dqn,
         target_net: Dqn,
@@ -81,12 +70,14 @@ def optimize_dqn(
     non_terminal_mask = torch.tensor(tuple(non_terminal_map), device=device, dtype=torch.bool)
 
     next_state_q_vals = torch.zeros(batch_size, device=device)
+    print(non_terminal_states)
     next_state_q_vals[non_terminal_mask] = target_net(non_terminal_states).max(1)[0].detach()
     
     target_q_vals = ((next_state_q_vals * gamma) + rewards)
     est_q_vals = policy_net(states).gather(1, actions)
 
     loss = loss_fn(est_q_vals, target_q_vals.unsqueeze(1))
+    # print(loss)
 
     optimizer.zero_grad()
     loss.backward()

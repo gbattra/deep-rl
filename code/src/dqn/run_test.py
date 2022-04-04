@@ -244,6 +244,7 @@ for i_episode in range(num_episodes):
         # Select and perform an action
         action = select_action(state)
         _, reward, done, _ = env.step(action.item())
+        env.render()
         reward = torch.tensor([reward], device=device)
 
         # Observe new state
@@ -262,6 +263,7 @@ for i_episode in range(num_episodes):
 
         # Perform one step of the optimization (on the policy network)
         optimize_model()
+
         if done:
             episode_durations.append(t + 1)
             plot_durations()

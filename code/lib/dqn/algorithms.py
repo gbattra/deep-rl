@@ -26,23 +26,33 @@ def dqn(
         plotter: Callable[[List[int]], None],
         target_update_freq: int,
         n_episodes: int,
-        n_actions: int,
-        epsilon: float) -> Dict:
+        epsilon_start: float,
+        epsilon_end: float,
+        epsilon_decay: float) -> Dict:
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    policy = generate_dqn_policy(policy_net, n_actions, epsilon)
+    policy = generate_dqn_policy(
+        policy_net,
+        env.action_space.n,
+        epsilon_start,
+        epsilon_end,
+        epsilon_decay)
 
     # sync target net weights with policy net
     target_net.load_state_dict(policy_net.state_dict())
 
     durations = []
+    rewards = []
     for e in trange(n_episodes, desc='Episode', leave=False):
         s = env.reset()
         s_tensor = torch.tensor([s], device=device, dtype=torch.float)
+        total_rwd = 0
         for t in count():
             # choose action and step env
-            a_tensor = policy(s_tensor)
+            a_tensor = policy(s_tensor, sum(durations) + t)
             s_prime, r, done, _ = env.step(a_tensor.item())
+            # env.render()
+            total_rwd += r
             s_prime_tensor = torch.tensor([s_prime], device=device, dtype=torch.float)
             r_tensor = torch.tensor([r], device=device)
 
@@ -54,14 +64,16 @@ def dqn(
 
             # one step optimization of policy net
             optimize(policy_net, target_net, buffer)
+        
+            # update target network periodically
+            if t % target_update_freq == 0:
+                target_net.load_state_dict(policy_net.state_dict())
 
             if done:
+                optimize(policy_net, target_net, buffer)
                 durations.append(t+1)
+                rewards.append(total_rwd)
                 plotter(durations)
                 break
-        
-        # update target network periodically
-        if e % target_update_freq == 0:
-            target_net.load_state_dict(policy_net.state_dict())
 
-    plotter(durations)
+    return {'durations': durations, 'rewards': rewards}
