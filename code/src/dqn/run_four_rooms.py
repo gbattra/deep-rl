@@ -27,24 +27,30 @@ N_EPISODES: int = 100
 N_TRIALS: int = 2
 EPSILON_START: float = 1.
 EPSILON_END: float = .05
-EPSILON_DECAY: float = 1.
-LEARNING_RATE: float = .01
+EPSILON_DECAY: float = .995
+LEARNING_RATE: float = .002
+N_STEPS: int = 2000
 
 
 def simple_dqn_network(input_size: int, dim_size: int, output_size: int) -> nn.Sequential:
+    l1 = nn.Linear(input_size, 64)
+    l1.weight.data.fill_(0.0)
+    l1.bias.data.fill_(0.0)
+    l2 = nn.Linear(64, output_size)
+    l2.weight.data.fill_(0.0)
+    l2.bias.data.fill_(0.0)
     return nn.Sequential(
-        nn.Linear(input_size, dim_size),
+        l1,
         nn.ReLU(),
-        # nn.Linear(dim_size, dim_size),
-        # nn.ReLU(),
-        nn.Linear(dim_size, output_size)
+        l2
     )
 
 
 def main():
     arena = four_rooms_arena()
-    env = FourRoomsOneHot(arena)
-    # env = FourRoomsCoords(arena)
+    # env = FourRoomsOneHot(arena)
+    env = FourRoomsCoords(arena)
+    # env = FourRooms(arena)
     # env = FourRoomsArena(arena)
     input_size = env.observation_size
     output_size = env.action_space.n
@@ -81,9 +87,11 @@ def main():
             plotter=plot_durations,
             target_update_freq=TARGET_UPDATE_FREQ,
             n_episodes=N_EPISODES,
+            n_steps=N_STEPS,
             epsilon_start=EPSILON_START,
             epsilon_end=EPSILON_END,
-            epsilon_decay=EPSILON_DECAY)
+            epsilon_decay=EPSILON_DECAY,
+            render=False)
         total_results[t, :] = results['durations']
 
     avg_ret = np.average(total_results, axis=0)

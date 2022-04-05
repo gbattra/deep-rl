@@ -25,18 +25,18 @@ GAMMA: float = 0.99
 N_EPISODES: int = 1000
 N_TRIALS: int = 10
 EPSILON_START: float = 1.
-EPSILON_END: float = 0.01
-EPSILON_DECAY: float = 0.995
+EPSILON_END: float = 0.1
+EPSILON_DECAY: float = 0.999
 LEARNING_RATE: float = 1e-3
-
+N_STEPS: int = 1500
 
 def ll_dqn_network(input_size: int, output_size: int) -> nn.Sequential:
     return nn.Sequential(
-        nn.Linear(input_size, 150),
+        nn.Linear(input_size, 250),
         nn.ReLU(),
-        nn.Linear(150, 120),
+        nn.Linear(250, 64),
         nn.ReLU(),
-        nn.Linear(120, output_size)
+        nn.Linear(64, output_size)
     )
 
 
@@ -75,6 +75,7 @@ def main():
             plotter=plot_durations,
             target_update_freq=TARGET_UPDATE_FREQ,
             n_episodes=N_EPISODES,
+            n_steps=N_STEPS,
             epsilon_start=EPSILON_START,
             epsilon_end=EPSILON_END,
             epsilon_decay=EPSILON_DECAY)

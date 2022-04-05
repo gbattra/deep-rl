@@ -28,6 +28,7 @@ EPSILON_START: float = 1.
 EPSILON_END: float = 0.05
 EPSILON_DECAY: float = 0.999
 LEARNING_RATE: float = .001
+N_STEPS: int = 2000
 
 
 def cartpole_dqn_network(input_size: int, output_size: int) -> nn.Sequential:
@@ -75,6 +76,7 @@ def main():
             plotter=plot_durations,
             target_update_freq=TARGET_UPDATE_FREQ,
             n_episodes=N_EPISODES,
+            n_steps=N_STEPS,
             epsilon_start=EPSILON_START,
             epsilon_end=EPSILON_END,
             epsilon_decay=EPSILON_DECAY)

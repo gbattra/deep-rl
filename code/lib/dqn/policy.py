@@ -27,6 +27,8 @@ def generate_dqn_policy(
             return torch.tensor([[np.random.choice(n_actions)]], device=device).item()
 
         with torch.no_grad():
-            return q_net(torch.Tensor(X).to(device).float()).argmax().item()
+            a_vals = q_net(torch.Tensor(X).to(device).float()).cpu().numpy()
+            return np.random.choice(np.flatnonzero(a_vals == a_vals.max()))
+            # return q_net(torch.Tensor(X).to(device).float()).argmax().item()
 
     return select_action

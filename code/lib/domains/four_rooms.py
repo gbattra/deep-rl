@@ -7,6 +7,7 @@ Implemenation of the four rooms domain
 
 from enum import IntEnum
 from typing import Any, Callable, Dict, List, Optional, Tuple
+from lib.function_approximation.features import all_features
 import gym
 import numpy as np
 
@@ -46,7 +47,7 @@ class FourRooms(gym.Env):
 
     def reset(self) -> Tuple[int, int]:
         self.pos = (self.arena.shape[0]-1, 0)
-        return self._pos_idx(self.pos)
+        return [self._pos_idx(self.pos)]
 
     def seed(self, seed: Optional[int] = None) -> List[int]:
         """Fix seed of environment
@@ -148,7 +149,7 @@ class FourRooms(gym.Env):
             rwd = 1
         self.pos = new_pos
         pos_idx = self._pos_idx(self.pos)
-        return pos_idx, rwd, done, {}
+        return [pos_idx], rwd, done, {}
 
 
 class FourRoomsOneHot(FourRooms):
@@ -175,7 +176,7 @@ class FourRoomsCoords(FourRooms):
         self.observation_size = 2
 
     def reset(self) -> Tuple[int, int]:
-        s = super().reset()
+        _ = super().reset()
         return self.pos
 
     def step(self, action: int) -> Tuple[Any, float, bool, Dict[str, Any]]:
@@ -203,6 +204,7 @@ class FourRoomsArena(FourRooms):
         mapp[self.pos[0], self.pos[1]] = self.PLAYER
 
         return list(mapp.flatten()), rwd, done, results
+
 
 def goal() -> Tuple[int, int]:
     return (0, 10)

@@ -83,7 +83,6 @@ def optimize_dqn(
     q_targets = rewards + (gamma * action_values * (1. - dones))
     q_est = policy_net(states).gather(1, actions)
 
-
     loss = loss_fn(q_est, q_targets)
 
     # print(loss)

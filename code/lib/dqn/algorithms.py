@@ -16,7 +16,6 @@ from lib.dqn.buffer import ReplayBuffer, Transition
 from lib.dqn.nn import Dqn, NeuralNetwork
 from lib.dqn.policy import generate_dqn_policy
 
-MAX_ITER = 5000
 
 def dqn(
         env: Env,
@@ -27,9 +26,11 @@ def dqn(
         plotter: Callable[[List[int], str], None],
         target_update_freq: int,
         n_episodes: int,
+        n_steps: int,
         epsilon_start: float,
         epsilon_end: float,
-        epsilon_decay: float) -> Dict:
+        epsilon_decay: float,
+        render: bool = True) -> Dict:
     policy = generate_dqn_policy(
         policy_net,
         env.action_space.n,
@@ -48,8 +49,10 @@ def dqn(
         for t in count():
             # choose action and step env
             a = policy(s, sum(durations) + t)
+
             s_prime, r, done, _ = env.step(a)
-            env.render()
+            if render:
+                env.render()
             total_rwd += r
 
             # store transition in replay buffer
@@ -65,11 +68,11 @@ def dqn(
             if t % target_update_freq == 0:
                 target_net.load_state_dict(policy_net.state_dict())
 
-            if done or t > MAX_ITER:
+            if done or (t > n_steps if n_steps > 0 else False):
                 # optimize(policy_net, target_net, buffer)
                 durations.append(t+1)
                 rewards.append(total_rwd)
-                plotter([durations], ['durations'])
+                plotter([durations, rewards], ['durations', 'rewards'])
                 break
 
     return {'durations': durations, 'rewards': rewards}

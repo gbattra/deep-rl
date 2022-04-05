@@ -9,8 +9,6 @@ import numpy as np
 
 from typing import Callable, List, Tuple
 
-from lib.function_approximation.four_rooms import FourRooms
-
 
 def get_feature_extractor(
         N: int,
@@ -59,10 +57,10 @@ def all_features(
     x_dim = arena.shape[1]
     y = (s // x_dim)
     x = (s % x_dim)
-    w_up = arena[y-1, x] == FourRooms.WALL if y-1 >= 0 else 1
-    w_down = arena[y+1, x] == FourRooms.WALL if y+1 < arena.shape[0] else 1
-    w_left = arena[y, x-1] == FourRooms.WALL if x-1 <= 0 else 1
-    w_right = arena[y, x+1] == FourRooms.WALL if x+1 < arena.shape[1] else 1
+    w_up = arena[y-1, x] == -1 if y-1 >= 0 else 1
+    w_down = arena[y+1, x] == -1 if y+1 < arena.shape[0] else 1
+    w_left = arena[y, x-1] == -1 if x-1 <= 0 else 1
+    w_right = arena[y, x+1] == -1 if x+1 < arena.shape[1] else 1
     d_up = (y-1, x) in doors
     d_down = (y+1, x) in doors
     d_left = (y, x-1) in doors

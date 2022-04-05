@@ -24,6 +24,7 @@ def plot_durations(data: List[List[int]], labels: List[str]):
         if len(d_t) >= 100:
             means = d_t.unfold(0, 100, 1).mean(1).view(-1)
             means = torch.cat((torch.zeros(99), means))
-            plt.plot(means.numpy())
+            plt.plot(means.numpy(), label=label)
     plt.pause(0.001)
+    plt.legend()
     plt.show(block=False)
