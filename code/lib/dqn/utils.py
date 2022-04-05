@@ -10,14 +10,12 @@ import matplotlib.pyplot as plt
 import torch
 from IPython import display
 
-def plot_durations(durations: List[int]):
+def plot_durations(durations: List[int], label: str):
     plt.figure(2)
     plt.clf()
     durations_t = torch.tensor(durations, dtype=torch.float)
     plt.title('Training...')
     plt.xlabel('Episode')
-    plt.ylabel('Rewards')
-    plt.plot(durations_t.numpy())
+    plt.plot(durations_t.numpy(), label=label)
 
     plt.pause(0.001)
-    plt.show(block=False)

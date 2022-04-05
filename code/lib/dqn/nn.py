@@ -10,6 +10,7 @@ from typing import Callable
 from matplotlib import dviread
 from torch import nn
 import torch
+import numpy as np
 from torch.utils.data import DataLoader, TensorDataset
 
 from lib.dqn.buffer import ReplayBuffer, Transition
@@ -61,22 +62,30 @@ def optimize_dqn(
     sample = buffer.sample(batch_size)
     batch = Transition(*zip(*sample))
 
-    states = torch.cat(batch.state)
-    actions = torch.cat(batch.action)
-    rewards = torch.cat(batch.reward)
+    states = torch.from_numpy(np.array(batch.state)).float().to(device)
+    next_states = torch.from_numpy(np.array(batch.next_state)).float().to(device)
+    actions = torch.from_numpy(np.array(batch.action)).unsqueeze(1).long().to(device)
+    rewards = torch.from_numpy(np.array(batch.reward)).unsqueeze(1).float().to(device)
+    dones = torch.from_numpy(np.array(batch.done)).unsqueeze(1).float().to(device)
 
-    non_terminal_states = torch.cat([s for s in batch.next_state if s is not None])
-    non_terminal_map = map(lambda state: state is not None, batch.next_state)
-    non_terminal_mask = torch.tensor(tuple(non_terminal_map), device=device, dtype=torch.bool)
+    # non_terminal_map = map(lambda state: state is not None, next_states)
+    # non_terminal_mask = torch.tensor(tuple(non_terminal_map), device=device, dtype=torch.bool)
 
-    next_state_q_vals = torch.zeros(batch_size, device=device)
-    print(non_terminal_states)
-    next_state_q_vals[non_terminal_mask] = target_net(non_terminal_states).max(1)[0].detach()
+    # next_state_q_vals = torch.zeros(batch_size, device=device)
+    # next_state_q_vals[non_terminal_mask] = target_net(next_states).max(1)[0].detach()
     
-    target_q_vals = ((next_state_q_vals * gamma) + rewards)
-    est_q_vals = policy_net(states).gather(1, actions)
+    # target_q_vals = ((next_state_q_vals * gamma) + rewards)
+    # est_q_vals = policy_net(states)
+    # truth_q_vals = policy_net(states)
+    # truth_q_vals[:, actions] = target_q_vals
 
-    loss = loss_fn(est_q_vals, target_q_vals.unsqueeze(1))
+    action_values = target_net(next_states).max(1)[0].unsqueeze(1)
+    q_targets = rewards + (gamma * action_values * (1. - dones))
+    q_est = policy_net(states).gather(1, actions)
+
+
+    loss = loss_fn(q_est, q_targets)
+
     # print(loss)
 
     optimizer.zero_grad()

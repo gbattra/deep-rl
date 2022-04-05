@@ -7,3 +7,4 @@ pygame
 torch==1.11.0
 torchvision
 IPython
+Box2D
