@@ -22,7 +22,7 @@ TARGET_UPDATE_FREQ: int = 10000
 REPLAY_BUFFER_SIZE: int = 100000
 BATCH_SIZE: int = 64
 GAMMA: float = 0.99
-N_EPISODES: int = 10000
+N_EPISODES: int = 1000
 N_TRIALS: int = 10
 EPSILON_START: float = 1.
 EPSILON_END: float = 0.05
@@ -34,7 +34,9 @@ def cartpole_dqn_network(input_size: int, output_size: int) -> nn.Sequential:
     return nn.Sequential(
         nn.Linear(input_size, 64),
         nn.ReLU(),
-        nn.Linear(64, output_size)
+        nn.Linear(64, 250),
+        nn.ReLU(),
+        nn.Linear(250, output_size)
     )
 
 
