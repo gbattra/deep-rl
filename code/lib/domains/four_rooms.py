@@ -158,7 +158,7 @@ class FourRoomsOneHot(FourRooms):
         self.observation_size = arena.shape[0] * self.arena.shape[1]
 
     def reset(self) -> Tuple[int, int]:
-        s = super().reset()
+        s = super().reset()[0]
         s_enc = [.0] * self.observation_size
         s_enc[s] = 1.
         return s_enc
@@ -166,7 +166,7 @@ class FourRoomsOneHot(FourRooms):
     def step(self, action: int) -> Tuple[Any, float, bool, Dict[str, Any]]:
         s_prime, rwd, done, results = super().step(action)
         s_prime_enc = [.0] * self.observation_size
-        s_prime_enc[s_prime] = 1.
+        s_prime_enc[s_prime[0]] = 1.
         return s_prime_enc, rwd, done, results
         
 

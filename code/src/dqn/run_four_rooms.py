@@ -18,38 +18,31 @@ from lib.dqn.buffer import ReplayBuffer
 from lib.dqn.nn import Dqn, optimize_dqn
 
 
-
 TARGET_UPDATE_FREQ: int = 10000
 REPLAY_BUFFER_SIZE: int = 100000
 BATCH_SIZE: int = 64
 GAMMA: float = 0.99
-N_EPISODES: int = 100
+N_EPISODES: int = 1000
 N_TRIALS: int = 2
-EPSILON_START: float = 1.
-EPSILON_END: float = .05
-EPSILON_DECAY: float = .995
+EPSILON_START: float = .1
+EPSILON_END: float = .1
+EPSILON_DECAY: float = 1.
 LEARNING_RATE: float = .002
 N_STEPS: int = 2000
 
 
 def simple_dqn_network(input_size: int, dim_size: int, output_size: int) -> nn.Sequential:
-    l1 = nn.Linear(input_size, 64)
-    l1.weight.data.fill_(0.0)
-    l1.bias.data.fill_(0.0)
-    l2 = nn.Linear(64, output_size)
-    l2.weight.data.fill_(0.0)
-    l2.bias.data.fill_(0.0)
     return nn.Sequential(
-        l1,
+        nn.Linear(input_size, 64),
         nn.ReLU(),
-        l2
+        nn.Linear(64, output_size)
     )
 
 
 def main():
     arena = four_rooms_arena()
-    # env = FourRoomsOneHot(arena)
-    env = FourRoomsCoords(arena)
+    env = FourRoomsOneHot(arena, noise=0.2)
+    # env = FourRoomsCoords(arena)
     # env = FourRooms(arena)
     # env = FourRoomsArena(arena)
     input_size = env.observation_size
