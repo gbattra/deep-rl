@@ -166,8 +166,8 @@ class FourRoomsEnv(Env):
         """
         if pos[0] < 0 or pos[1] < 0:
             return True
-        if pos[0] > self.observation_space[0].n \
-            or pos[1] > self.observation_space[1].n:
+        if pos[0] >= self.observation_space[0].n \
+            or pos[1] >= self.observation_space[1].n:
             return True
         return False
 
@@ -217,3 +217,20 @@ class FourRoomsEnv(Env):
         self.agent_pos = next_pos
 
         return self.agent_pos, reward, done, {}
+
+
+class FourRoomsEnvId(FourRoomsEnv):
+    def reset(self) -> Tuple[int, int]:
+        s = super().reset()
+        x, y = s
+        # print(s)
+
+        return (y * self.cols) + x
+
+    def step(self, action: Action) -> Tuple[Tuple[int, int], float, bool, dict]:
+        s, r, d, m = super().step(action)
+        x, y = s
+
+        # print(s)
+
+        return (y * self.cols) + x, r, d, m

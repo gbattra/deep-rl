@@ -6,7 +6,7 @@ import numpy as np
 from lib.monte_carlo.policy import create_blackjack_policy, create_epsilon_policy
 
 
-def generate_episode(env: gym.Env, policy: Callable, n_steps: int, es: bool = False):
+def generate_episode(env: gym.Env, policy: Callable, es: bool = False):
     """A function to generate one episode and collect the sequence of (s, a, r) tuples
 
     This function will be useful for implementing the MC methods
@@ -18,19 +18,18 @@ def generate_episode(env: gym.Env, policy: Callable, n_steps: int, es: bool = Fa
     """
     episode = []
     state = env.reset()
-    t = 0
-    while True and t < n_steps:
+    while True:
         if es and len(episode) == 0:
             action = env.action_space.sample()
         else:
             action = policy(state)
 
         next_state, reward, done, _ = env.step(action)
+        # print(f'next state: {next_state}')
         episode.append((state, action, reward))
         if done:
             break
         state = next_state
-        t += 1
 
     return episode
 

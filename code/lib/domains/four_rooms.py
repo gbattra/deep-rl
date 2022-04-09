@@ -33,7 +33,8 @@ class FourRooms(gym.Env):
     def __init__(
             self,
             arena: np.ndarray,
-            noise: float = .0) -> None:
+            noise: float = .0,
+            max_steps: int = 460) -> None:
         super().__init__()
         self.observation_size = 1
         self.arena = arena
@@ -43,10 +44,13 @@ class FourRooms(gym.Env):
             gym.spaces.Discrete(self.arena.shape[0]),
             gym.spaces.Discrete(self.arena.shape[1])
         ])
-        self.pos = (self.arena.shape[0]-1, 0)
+        self.t = 0
+        self.max_t = max_steps
+        self.pos = (0, 0)
 
     def reset(self) -> Tuple[int, int]:
-        self.pos = (self.arena.shape[0]-1, 0)
+        self.t = 0
+        self.pos = (0, 0)
         return [self._pos_idx(self.pos)]
 
     def seed(self, seed: Optional[int] = None) -> List[int]:
@@ -65,9 +69,9 @@ class FourRooms(gym.Env):
 
     def _action_to_dydx(self, action: FourRoomsAction) -> Tuple[int, int]:
         action_map = {
-            FourRoomsAction.UP: (-1, 0),
+            FourRoomsAction.UP: (1, 0),
             FourRoomsAction.RIGHT: (0, 1),
-            FourRoomsAction.DOWN: (1, 0),
+            FourRoomsAction.DOWN: (-1, 0),
             FourRoomsAction.LEFT: (0, -1)
         }
         return action_map[action]
@@ -141,14 +145,18 @@ class FourRooms(gym.Env):
     def step(self, action: int) -> Tuple[Any, float, bool, Dict[str, Any]]:
         new_pos = self._take_action(self.pos, action)
         done = False
-        rwd = 0
+        rwd = .0
         if self.arena[new_pos] == self.WALL:
             new_pos = self.pos
         if self.arena[new_pos] == self.GOAL:
             done = True
-            rwd = 1
+            rwd = 1.
+        if self.t >= self.max_t:
+            done = True
+            rwd = .0
         self.pos = new_pos
         pos_idx = self._pos_idx(self.pos)
+        self.t += 1
         return [pos_idx], rwd, done, {}
 
 
@@ -207,7 +215,7 @@ class FourRoomsArena(FourRooms):
 
 
 def goal() -> Tuple[int, int]:
-    return (0, 10)
+    return (10, 10)
 
 
 def doors() -> List[Tuple[int, int]]:
