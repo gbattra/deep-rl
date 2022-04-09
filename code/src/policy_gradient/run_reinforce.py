@@ -19,7 +19,7 @@ from lib.policy_gradient.policy import softmax_policy
 GAMMA: float = 0.99
 ALPHA: float = 0.1
 
-N_EPISODES: int = 250
+N_EPISODES: int = 1000
 N_STEPS: int = 10000
 
 def main():

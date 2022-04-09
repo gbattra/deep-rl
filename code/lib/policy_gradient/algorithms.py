@@ -38,24 +38,27 @@ def reinforce(
                 p=policy(X(s), O)))
 
         T = len(episode)
+        G = 0
         for t in trange(T, desc='Step', leave=False):
-            s, a, _ = episode[t]
+            s, a, r = episode[t]
             # print(f's: {s}')
             # compute return
             G = 0
-            for k in range(t, T - t):
+            for k in range(t, T):
                 _, _, r = episode[k]
-                G += (gamma ** (k - t- 1)) * r
+                G += (gamma ** (k - t - 1)) * r
+
+            pred = policy(X(s), O)
 
             # update policy parameters
             grad = X(s) - np.sum(
                 np.array([
-                    (policy(X(s), O)[b] * X(s)) if b != a else .0 * X(s) for b in range(env.action_space.n)
+                    (policy(X(s), O)[b] * X(s)) for b in range(env.action_space.n)
                 ]),
                 axis=0)
-
+            # print(grad)
             # update policy weights
-            O[:, a] = O[:, a] + (alpha * (gamma ** t) * G * grad)
+            O[:, a] += alpha * (G - pred[a]) * X(s)
         
         durations[e] = T
 
@@ -99,10 +102,10 @@ def actor_critic(
 
             p_grad = X(s) - np.sum(
                 np.array([
-                    (policy(X(s), O)[b] * X(s)) if b != a else .0 * X(s) for b in range(env.action_space.n)
+                    (policy(X(s), O)[b] * X(s)) for b in range(env.action_space.n)
                 ]),
                 axis=0)
-            # print(p_grad)
+            print(p_grad)
             O[:, a] += alpha_p * I * L * p_grad
 
             I *= gamma
