@@ -105,8 +105,8 @@ def actor_critic(
                     (policy(X(s), O)[b] * X(s)) for b in range(env.action_space.n)
                 ]),
                 axis=0)
-            print(p_grad)
-            O[:, a] += alpha_p * I * L * p_grad
+            # print(p_grad)
+            O[:, a] += alpha_p * I * L * X(s)
 
             I *= gamma
             s = s_next
